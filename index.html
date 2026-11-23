@@ -81,6 +81,9 @@ nav.tabs button.on .e{filter:none;opacity:1}
 .sheet-bg{position:fixed;inset:0;background:rgba(20,26,31,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
 .sheet{background:var(--paper);width:100%;max-width:640px;max-height:94vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(var(--sb) + 22px);animation:up .2s ease-out}
 .grab{width:42px;height:5px;border-radius:9px;background:#d5ccbc;margin:4px auto 10px}
+.sheet{transition:transform .18s ease-out}
+.sheet-top{position:sticky;top:-8px;z-index:5;background:var(--paper);margin:-8px -18px 0;padding:8px 18px 2px;display:flex;justify-content:center;align-items:flex-start}
+.sheet-x{position:absolute;right:12px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:16px;line-height:1;color:var(--ink);box-shadow:var(--shadow)}
 @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .sheet h3{font-family:var(--serif);font-size:24px;margin:6px 0 4px;line-height:1.15}
@@ -478,7 +481,7 @@ function viewCfg(){
   <div class="panel"><p>Para usar la app en otro viaje: primero tocá <b>Descargar copia</b> (arriba) y guardá el archivo. Así este viaje queda guardado y lo podés volver a abrir cuando quieras con <b>Restaurar desde archivo</b>.</p>
     <p>Después, <b>Empezar un viaje nuevo</b> borra reservas, archivos, guía y tildados, y deja la app vacía.</p>
     <div class="btnrow"><button class="btn danger" id="wipe">Empezar un viaje nuevo</button></div></div>
-  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v8</p>`;
+  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v9</p>`;
 }
 
 /* ---------- Editor de la guía ---------- */
@@ -601,9 +604,22 @@ function openAsk(preset){
 }
 
 /* ---------- Detail ---------- */
-function openSheet(html){closeSheet();const bg=document.createElement('div');bg.className='sheet-bg';bg.id='sheet';
-  bg.innerHTML=`<div class="sheet"><div class="grab"></div>${html}</div>`;bg.addEventListener('click',e=>{if(e.target===bg)closeSheet()});document.body.appendChild(bg);document.body.style.overflow='hidden';return bg}
-function closeSheet(){const s=$('#sheet');if(s)s.remove();document.body.style.overflow=''}
+/* Navegación "atrás": botón Cerrar, deslizar hacia abajo y botón atrás de Android */
+function pushNav(){try{history.pushState({mv:1},'')}catch(e){}}
+function _closeSheet(){const s=$('#sheet');if(s)s.remove();document.body.style.overflow=''}
+function _closeViewer(){const v=document.querySelector('.viewer');if(v){v.remove();keepAwake(false);return true}return false}
+window.addEventListener('popstate',()=>{if(_closeViewer())return;_closeSheet()});
+function goBack(){if(history.state&&history.state.mv){history.back()}else if(!_closeViewer())_closeSheet()}
+function openSheet(html){const had=!!$('#sheet');_closeSheet();const bg=document.createElement('div');bg.className='sheet-bg';bg.id='sheet';
+  bg.innerHTML=`<div class="sheet"><div class="sheet-top"><div class="grab"></div><button type="button" class="sheet-x" data-back aria-label="Cerrar">✕</button></div>${html}</div>`;
+  bg.addEventListener('click',e=>{if(e.target===bg||e.target.closest('[data-back]'))goBack()});
+  // deslizar hacia abajo para cerrar
+  const sh=bg.querySelector('.sheet');let y0=null,dy=0;
+  sh.addEventListener('touchstart',e=>{if(sh.scrollTop<=0){y0=e.touches[0].clientY;dy=0}else y0=null},{passive:true});
+  sh.addEventListener('touchmove',e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy>0){sh.style.transform=`translateY(${dy}px)`;sh.style.transition='none'}},{passive:true});
+  sh.addEventListener('touchend',()=>{if(y0===null)return;sh.style.transition='';if(dy>110)goBack();else sh.style.transform='';y0=null});
+  document.body.appendChild(bg);document.body.style.overflow='hidden';if(!had&&!document.querySelector('.viewer'))pushNav();return bg}
+function closeSheet(){if($('#sheet'))goBack()}
 
 function showItem(id){
   const it=S.items.find(i=>i.id===id); if(!it)return; const T=TYPES[it.type]||TYPES.nota; const fs=filesOf(id);
@@ -637,18 +653,18 @@ function viewFile(fid, scan){
   const f=S.files.find(x=>x.id===fid); if(!f)return; const u=urlOf(f);
   const it=S.items.find(i=>i.id===f.itemId); const sib=it?filesOf(it.id):[f]; const k=sib.findIndex(x=>x.id===f.id);
   if(scan===undefined) scan = isImg(f) && it && (TYPES[it.type]?.transport || it.type==='entrada');
-  document.querySelectorAll('.viewer').forEach(x=>x.remove());
+  const hadV=!!document.querySelector('.viewer'); document.querySelectorAll('.viewer').forEach(x=>x.remove());
   const v=document.createElement('div');v.className='viewer'+(scan?' scan':'');
   v.innerHTML=`<div class="vt"><span>${esc(it?it.title:f.name)}${sib.length>1?` · ${k+1}/${sib.length}`:''}</span>
-      ${isImg(f)?`<button class="btn sm" data-scanmode>${scan?'Fondo oscuro':'Modo escaneo'}</button>`:''}<button class="btn sm" data-close>Cerrar</button></div>
+      ${isImg(f)?`<button class="btn sm" data-scanmode>${scan?'Fondo oscuro':'Modo escaneo'}</button>`:''}<button class="btn sm" data-close>✕ Cerrar</button></div>
     <div class="vb">${isImg(f)?`<img src="${u}" alt="">`:`<div class="pdfbox"><div style="font-size:60px">📄</div><p>${esc(f.name)}</p><a class="btn pri" href="${u}" target="_blank" rel="noopener" download="${esc(f.name)}">Abrir PDF</a><p class="muted" style="color:#9aa">Se abre en el visor del teléfono.</p></div>`}</div>
     ${scan?`<div class="vtip">☀️ Subí el brillo al máximo para que lo lean mejor</div>`:''}
     ${sib.length>1?`<div class="vnav"><button class="btn sm" data-vgo="${sib[(k-1+sib.length)%sib.length].id}">‹ Anterior</button><button class="btn sm" data-vgo="${sib[(k+1)%sib.length].id}">Siguiente ›</button></div>`:''}`;
   v.addEventListener('click',e=>{
-    if(e.target.closest('[data-close]')){v.remove();keepAwake(false);return}
+    if(e.target.closest('[data-close]')){goBack();return}
     if(e.target.closest('[data-scanmode]')){viewFile(fid,!v.classList.contains('scan'));return}
     const g=e.target.closest('[data-vgo]'); if(g){viewFile(g.dataset.vgo,v.classList.contains('scan'))}});
-  document.body.appendChild(v); keepAwake(true);
+  document.body.appendChild(v); keepAwake(true); if(!hadV)pushNav();
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.querySelector('.viewer'))keepAwake(true)});
 
@@ -779,7 +795,7 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='tripf')return;e.p
   if(d.start&&d.end&&d.end<d.start){toast('La fecha final es anterior a la inicial');return}
   S.trip=Object.assign({key:'trip'},S.trip,d);await DB.put('meta',S.trip);toast('Guardado')});
 $('#fab').addEventListener('click',()=>editItem(null, S.view==='res'&&TYPES[S.filter]?{type:S.filter}:null));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){const v=document.querySelector('.viewer');if(v){v.remove();keepAwake(false)}else closeSheet()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(document.querySelector('.viewer')||$('#sheet')))goBack()});
 
 async function storageInfo(){try{const el=$('#stinfo');if(!el||!navigator.storage||!navigator.storage.estimate)return;const est=await navigator.storage.estimate();
   const p=navigator.storage.persisted?await navigator.storage.persisted():false;el.textContent=`Usando ${(est.usage/1048576).toFixed(1)} MB en el teléfono${p?' · almacenamiento protegido':''}.`}catch(e){}}
