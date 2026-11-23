@@ -1,5 +1,5 @@
 // Mi Viaje — service worker: guarda la app en el teléfono para usarla sin conexión.
-const CACHE = 'mi-viaje-v9';
+const CACHE = 'mi-viaje-v10';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

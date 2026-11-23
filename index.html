@@ -145,6 +145,14 @@ form textarea{min-height:90px;resize:vertical}
 .panel p{margin:6px 0;font-size:14.5px}
 .panel ol{margin:6px 0;padding-left:20px;font-size:14.5px}
 .muted{color:var(--ink2);font-size:13.5px}
+.docs{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.docb{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 12px 8px 8px;box-shadow:var(--shadow)}
+.dth{width:48px;height:48px;flex:none;border-radius:10px;overflow:hidden;background:#ece5d8;display:grid;place-items:center;font-size:24px}
+.dth img{width:100%;height:100%;object-fit:cover}
+.dtx{flex:1;min-width:0}
+.dtx b{display:block;font-size:16px}
+.dtx small{display:block;color:var(--ink2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dgo{color:var(--accent);font-weight:700;font-size:14px;white-space:nowrap}
 .askbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:10px 0 4px;padding:12px;border-radius:14px;border:1px solid #e7c9b6;background:linear-gradient(135deg,#fbeee4,#f6e3f0);color:#6b3a1f;font-weight:700;font-size:15px}
 .gintro{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:4px 0 6px}
 .gintro p{margin:6px 0 10px;font-size:14.5px}
@@ -243,7 +251,7 @@ const urlOf = f=>{if(!urls.has(f.id)&&f.blob)urls.set(f.id,URL.createObjectURL(f
 const isImg = f=>/^image\//.test(f.type);
 const money = it=>it.price?`${it.currency||''} ${Number(it.price).toLocaleString('es-AR',{maximumFractionDigits:2})}`.trim():'';
 
-function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function toast(msg){document.querySelectorAll('.toast').forEach(x=>x.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
 function confirmDlg(text, ok='Aceptar', danger=false){return new Promise(res=>{const bg=document.createElement('div');bg.className='dlg-bg';
   bg.innerHTML=`<div class="dlg"><div style="font-size:16px;margin-bottom:16px">${esc(text)}</div><div class="btnrow"><button class="btn" data-a="0">Cancelar</button><button class="btn ${danger?'danger':'pri'}" data-a="1">${esc(ok)}</button></div></div>`;
   bg.onclick=e=>{const a=e.target.dataset.a;if(a!==undefined||e.target===bg){bg.remove();res(a==='1')}};document.body.appendChild(bg);});}
@@ -290,6 +298,14 @@ function navTargets(it){
   }
   return out;
 }
+const DOC_LABEL={vuelo:'Boleto',transporte:'Boleto',hospedaje:'Reserva',entrada:'Entrada',actividad:'Entrada',comida:'Reserva',nota:'Documento'};
+const DOC_ICON={vuelo:'🎫',transporte:'🎫',hospedaje:'🏨',entrada:'🎟️',actividad:'🎟️',comida:'🧾',nota:'📄'};
+function docLabel(it,k,n){const b=DOC_LABEL[it.type]||'Documento';return n>1?`${b} ${k+1}`:b}
+function isTicket(it){return !!it&&(TYPES[it.type]?.transport||it.type==='entrada')}
+function docsPanel(it){const fs=filesOf(it.id);if(!fs.length)return '';
+  return `<div class="docs">${fs.map((f,k)=>`<button class="docb" data-view="${f.id}"${isTicket(it)&&isImg(f)?' data-scan="1"':''}>
+    <span class="dth">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:'📄'}</span>
+    <span class="dtx"><b>${DOC_ICON[it.type]||'📄'} ${esc(docLabel(it,k,fs.length))}</b><small>${esc(f.name)}</small></span><span class="dgo">Abrir ›</span></button>`).join('')}</div>`}
 function navPanel(it){
   const ts=navTargets(it); if(!ts.length) return '';
   return `<div class="nav"><div class="navh">🧭 Cómo llegar</div>${ts.map(t=>{
@@ -457,7 +473,7 @@ function viewDocs(){
   let h=`<header class="top"><div class="eyebrow">Pasajes, QR, vouchers</div><h1>Archivos</h1><div class="sub">Guardados en el teléfono: se ven sin conexión.</div></header>`;
   if(!fs.length) return h+`<div class="nothing"><div class="e">📎</div>Adjuntá capturas o PDFs desde cada reserva.<br><span class="muted">Tip: para los QR, una captura de pantalla funciona mejor que el PDF.</span></div>`;
   h+=`<div class="grid">`+fs.map(f=>{const it=S.items.find(i=>i.id===f.itemId);
-    return `<button class="file" data-view="${f.id}"><div class="th">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:'📄'}</div><div class="cap"><b>${esc(it?it.title:'—')}</b><span>${esc(f.name)}</span></div></button>`}).join('')+`</div>`;
+    return `<button class="file" data-view="${f.id}"><div class="th">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:'📄'}</div><div class="cap"><b>${esc(it?it.title:'—')}</b><span>${it?(DOC_ICON[it.type]||'📄')+' '+esc(docLabel(it,filesOf(it.id).indexOf(f),filesOf(it.id).length)):esc(f.name)}</span></div></button>`}).join('')+`</div>`;
   return h;
 }
 
@@ -481,7 +497,7 @@ function viewCfg(){
   <div class="panel"><p>Para usar la app en otro viaje: primero tocá <b>Descargar copia</b> (arriba) y guardá el archivo. Así este viaje queda guardado y lo podés volver a abrir cuando quieras con <b>Restaurar desde archivo</b>.</p>
     <p>Después, <b>Empezar un viaje nuevo</b> borra reservas, archivos, guía y tildados, y deja la app vacía.</p>
     <div class="btnrow"><button class="btn danger" id="wipe">Empezar un viaje nuevo</button></div></div>
-  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v9</p>`;
+  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v10</p>`;
 }
 
 /* ---------- Editor de la guía ---------- */
@@ -618,7 +634,7 @@ function openSheet(html){const had=!!$('#sheet');_closeSheet();const bg=document
   sh.addEventListener('touchstart',e=>{if(sh.scrollTop<=0){y0=e.touches[0].clientY;dy=0}else y0=null},{passive:true});
   sh.addEventListener('touchmove',e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy>0){sh.style.transform=`translateY(${dy}px)`;sh.style.transition='none'}},{passive:true});
   sh.addEventListener('touchend',()=>{if(y0===null)return;sh.style.transition='';if(dy>110)goBack();else sh.style.transform='';y0=null});
-  document.body.appendChild(bg);document.body.style.overflow='hidden';if(!had&&!document.querySelector('.viewer'))pushNav();return bg}
+  document.body.appendChild(bg);document.body.style.overflow='hidden';if(!had&&!document.querySelector('.viewer')&&!(history.state&&history.state.mv))pushNav();return bg}
 function closeSheet(){if($('#sheet'))goBack()}
 
 function showItem(id){
@@ -636,11 +652,11 @@ function showItem(id){
   if(it.notes) rows.push(['Notas',it.notes]);
   const s=openSheet(`<div class="eyebrow">${T.icon} ${T.label}</div><h3>${esc(it.title)}</h3>
     ${it.code?`<div class="bigcode"><div><small>Código de reserva</small><div class="c">${esc(it.code)}</div></div><button class="btn sm" data-copy="${esc(it.code)}">Copiar</button></div>`:''}
+    ${docsPanel(it)}
     ${navPanel(it)}
     <div class="kv">${rows.map(([k,v])=>`<div class="r"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}
       ${it.link?`<div class="r"><div class="k">Enlace</div><div class="v"><a class="lnk" href="${esc(it.link)}" target="_blank" rel="noopener">Abrir</a> <span class="muted">(requiere conexión)</span></div></div>`:''}
     </div>
-    ${fs.length?`<div class="muted" style="margin-left:2px">Archivos</div><div class="atts">${fs.map(f=>`<button class="att" data-view="${f.id}">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:`<div class="pdf"><b>📄</b>${esc(f.name)}</div>`}</button>`).join('')}</div>`:''}
     <button class="askbtn" data-ask="Sobre «${esc(it.title)}»: ">✨ Preguntar a Claude sobre esto</button>
     <div class="btnrow"><button class="btn dark" data-edit="${id}">Editar</button><button class="btn" data-dup="${id}">Duplicar</button><button class="btn danger" data-del="${id}">Borrar</button></div>`);
 }
@@ -656,12 +672,13 @@ function viewFile(fid, scan){
   const hadV=!!document.querySelector('.viewer'); document.querySelectorAll('.viewer').forEach(x=>x.remove());
   const v=document.createElement('div');v.className='viewer'+(scan?' scan':'');
   v.innerHTML=`<div class="vt"><span>${esc(it?it.title:f.name)}${sib.length>1?` · ${k+1}/${sib.length}`:''}</span>
-      ${isImg(f)?`<button class="btn sm" data-scanmode>${scan?'Fondo oscuro':'Modo escaneo'}</button>`:''}<button class="btn sm" data-close>✕ Cerrar</button></div>
+      ${it&&!$('#sheet')?`<button class="btn sm" data-toitem="${it.id}">Ver reserva</button>`:''}${isImg(f)?`<button class="btn sm" data-scanmode>${scan?'Fondo oscuro':'Modo escaneo'}</button>`:''}<button class="btn sm" data-close>✕ Cerrar</button></div>
     <div class="vb">${isImg(f)?`<img src="${u}" alt="">`:`<div class="pdfbox"><div style="font-size:60px">📄</div><p>${esc(f.name)}</p><a class="btn pri" href="${u}" target="_blank" rel="noopener" download="${esc(f.name)}">Abrir PDF</a><p class="muted" style="color:#9aa">Se abre en el visor del teléfono.</p></div>`}</div>
     ${scan?`<div class="vtip">☀️ Subí el brillo al máximo para que lo lean mejor</div>`:''}
     ${sib.length>1?`<div class="vnav"><button class="btn sm" data-vgo="${sib[(k-1+sib.length)%sib.length].id}">‹ Anterior</button><button class="btn sm" data-vgo="${sib[(k+1)%sib.length].id}">Siguiente ›</button></div>`:''}`;
   v.addEventListener('click',e=>{
     if(e.target.closest('[data-close]')){goBack();return}
+    const ti=e.target.closest('[data-toitem]'); if(ti){_closeViewer();showItem(ti.dataset.toitem);return}
     if(e.target.closest('[data-scanmode]')){viewFile(fid,!v.classList.contains('scan'));return}
     const g=e.target.closest('[data-vgo]'); if(g){viewFile(g.dataset.vgo,v.classList.contains('scan'))}});
   document.body.appendChild(v); keepAwake(true); if(!hadV)pushNav();
