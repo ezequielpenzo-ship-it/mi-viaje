@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi Viaje</title>
+<meta name="theme-color" content="#1f2a33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Viaje">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --paper:#f6f1e8; --card:#fffdf8; --ink:#1f2a33; --ink2:#5a646c; --line:#e4dccd;
+  --accent:#b5562b; --accent2:#f3dccd; --ok:#3d7a5c; --warn:#b07d12; --bad:#9a3b3b;
+  --r:16px; --shadow:0 1px 2px rgba(31,42,51,.06),0 4px 14px rgba(31,42,51,.06);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.4}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{max-width:640px;margin:0 auto;min-height:100vh;padding:calc(var(--st) + 8px) 16px calc(var(--sb) + 96px)}
+header.top{padding:14px 2px 6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-family:var(--serif);font-weight:600;font-size:30px;margin:4px 0 2px;line-height:1.1}
+h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:22px 0 10px}
+.sub{color:var(--ink2);font-size:14px}
+.banner{background:#fff4d6;border:1px solid #ecd590;color:#6b5210;border-radius:12px;padding:10px 12px;font-size:13px;margin:10px 0}
+.banner b{font-weight:700}
+.next{background:var(--ink);color:#fff;border-radius:var(--r);padding:16px;margin:14px 0 4px;box-shadow:var(--shadow);cursor:pointer}
+.next .eyebrow{color:#f0b896}
+.next .t{font-family:var(--serif);font-size:20px;margin:6px 0 4px}
+.next .m{color:#c9d1d6;font-size:14px}
+.day{margin-top:22px}
+.dayh{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px;position:sticky;top:0;background:var(--paper);padding:6px 0;z-index:2}
+.dayh .n{font-family:var(--serif);font-size:19px;font-weight:600;text-transform:capitalize}
+.dayh .d{font-size:12px;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em}
+.dayh.today .n{color:var(--accent)}
+.empty-day{font-size:14px;color:#9aa1a6;padding:4px 2px 0;font-style:italic}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;width:100%;text-align:left}
+.card:active{transform:scale(.99)}
+.ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:19px;flex:none}
+.card .body{flex:1;min-width:0}
+.card .row1{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.card .title{font-weight:650;font-size:16px;overflow:hidden;text-overflow:ellipsis}
+.card .time{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .meta{font-size:13.5px;color:var(--ink2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{font-size:11.5px;font-weight:650;padding:2px 8px;border-radius:999px;background:#efe9de;color:var(--ink2)}
+.tag.pendiente{background:#fbeccb;color:#7a5608}
+.tag.reservado{background:#dcebe2;color:#2b5b43}
+.tag.pagado{background:#d9e6f2;color:#284b6e}
+.tag.cancelado{background:#f1dcdc;color:#7d2c2c;text-decoration:line-through}
+.tag.code{background:var(--ink);color:#fff;font-family:ui-monospace,Menlo,monospace;letter-spacing:.04em}
+.cont{display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--ink2);padding:6px 4px 6px 14px;border-left:3px solid var(--line);margin:0 0 8px 18px;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:14px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.search{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px;margin:8px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.file{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;text-align:left;padding:0}
+.file .th{aspect-ratio:1/1;background:#ece5d8;display:grid;place-items:center;font-size:34px;overflow:hidden}
+.file .th img{width:100%;height:100%;object-fit:cover}
+.file .cap{padding:8px 10px;font-size:12.5px}
+.file .cap b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file .cap span{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,248,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 8px calc(var(--sb) + 6px);z-index:20}
+nav.tabs .in{display:flex;max-width:640px;width:100%}
+nav.tabs button{flex:1;background:none;border:0;padding:6px 0;font-size:11.5px;color:var(--ink2);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button .e{font-size:20px;filter:grayscale(1);opacity:.65}
+nav.tabs button.on{color:var(--ink);font-weight:700}
+nav.tabs button.on .e{filter:none;opacity:1}
+.fab{position:fixed;right:max(18px,calc(50% - 302px));bottom:calc(var(--sb) + 76px);width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:30px;box-shadow:0 6px 18px rgba(181,86,43,.4);z-index:21;line-height:1}
+.sheet-bg{position:fixed;inset:0;background:rgba(20,26,31,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+.sheet{background:var(--paper);width:100%;max-width:640px;max-height:94vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(var(--sb) + 22px);animation:up .2s ease-out}
+.grab{width:42px;height:5px;border-radius:9px;background:#d5ccbc;margin:4px auto 10px}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet h3{font-family:var(--serif);font-size:24px;margin:6px 0 4px;line-height:1.15}
+.kv{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:12px 0;overflow:hidden}
+.kv .r{display:flex;gap:12px;padding:11px 14px;border-top:1px solid var(--line);align-items:flex-start}
+.kv .r:first-child{border-top:0}
+.kv .k{width:96px;flex:none;font-size:13px;color:var(--ink2);padding-top:1px}
+.kv .v{flex:1;min-width:0;word-break:break-word;white-space:pre-wrap}
+.bigcode{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;margin:12px 0}
+.bigcode .c{font-family:ui-monospace,Menlo,monospace;font-size:24px;letter-spacing:.08em;word-break:break-all}
+.bigcode small{display:block;color:#aeb8bf;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 16px;font-weight:600;font-size:15px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:7px 12px;font-size:13.5px;border-radius:10px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btnrow .btn{flex:1}
+a.lnk{color:var(--accent);font-weight:600}
+form .f{margin:12px 0}
+form label{display:block;font-size:13px;color:var(--ink2);margin:0 0 5px 2px;font-weight:600}
+form input,form select,form textarea{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 12px;min-height:46px}
+form textarea{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .f{margin:0}
+.typesel{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.typesel button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 2px;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.typesel button span{font-size:20px}
+.typesel button.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:700}
+.atts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.att{position:relative;width:78px;height:78px;border-radius:12px;border:1px solid var(--line);background:#ece5d8;overflow:hidden;display:grid;place-items:center;font-size:12px;text-align:center;padding:0;cursor:pointer}
+.att img{width:100%;height:100%;object-fit:cover}
+.att .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:13px;line-height:22px;padding:0}
+.att .pdf{padding:4px;word-break:break-all;font-size:10.5px}
+.att .pdf b{display:block;font-size:22px}
+.viewer{position:fixed;inset:0;background:#0d1115;z-index:60;display:flex;flex-direction:column}
+.viewer .vt{display:flex;justify-content:space-between;align-items:center;padding:calc(var(--st) + 10px) 14px 10px;color:#fff;gap:10px}
+.viewer .vt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.viewer .vb{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;touch-action:pinch-zoom}
+.viewer img{max-width:100%;max-height:100%;background:#fff}
+.viewer.scan{background:#fff}
+.viewer.scan .vt{color:var(--ink)}
+.viewer.scan .vb{padding:4px}
+.viewer.scan img{width:100%;height:auto;max-height:100%;object-fit:contain}
+.vtip{text-align:center;font-size:13px;color:#7a5608;background:#fff4d6;padding:8px;margin:0 12px 6px;border-radius:10px}
+.viewer:not(.scan) .vtip{display:none}
+.vnav{display:flex;justify-content:space-between;padding:8px 14px calc(var(--sb) + 12px)}
+.viewer .vt{gap:8px}
+.viewer .vt span{flex:1}
+.tix{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tixb{display:flex;align-items:center;gap:8px;background:#fff;color:var(--ink);border:0;border-radius:12px;padding:6px 12px 6px 6px;font-size:14px}
+.tixb img{width:40px;height:40px;object-fit:cover;border-radius:8px}
+.tixb span{width:40px;height:40px;display:grid;place-items:center;font-size:22px;background:#eee;border-radius:8px}
+.viewer .pdfbox{color:#fff;text-align:center;padding:20px}
+.dlg{background:var(--card);border-radius:18px;padding:20px;max-width:360px;width:calc(100% - 40px);margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.dlg-bg{position:fixed;inset:0;background:rgba(20,26,31,.45);z-index:80;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sb) + 150px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:90;box-shadow:var(--shadow);animation:fade .15s;max-width:90vw;text-align:center}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:10px 0}
+.panel p{margin:6px 0;font-size:14.5px}
+.panel ol{margin:6px 0;padding-left:20px;font-size:14.5px}
+.muted{color:var(--ink2);font-size:13.5px}
+.askbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:10px 0 4px;padding:12px;border-radius:14px;border:1px solid #e7c9b6;background:linear-gradient(135deg,#fbeee4,#f6e3f0);color:#6b3a1f;font-weight:700;font-size:15px}
+.gintro{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:4px 0 6px}
+.gintro p{margin:6px 0 10px;font-size:14.5px}
+.bar{height:8px;background:#ece5d8;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:9px;transition:width .2s}
+.grow{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.gsi{margin:-4px 2px 10px}
+.gsh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.gsh h2{margin-right:auto}
+.impck{display:flex;align-items:center;gap:10px;font-weight:600;margin:14px 2px}
+.impck input{width:22px;height:22px;min-height:0;accent-color:var(--accent)}
+.btn:disabled{opacity:.4}
+.glist{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.gi{display:flex;gap:12px;align-items:flex-start;padding:12px 12px 12px 14px;border-top:1px solid var(--line)}
+.gi:first-child{border-top:0}
+.gck{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid #c9bfae;background:#fff;color:#fff;font-weight:800;font-size:15px;line-height:22px;padding:0;margin-top:1px}
+.gi.done .gck{background:var(--ok);border-color:var(--ok)}
+.gb{flex:1;min-width:0;cursor:pointer}
+.gt{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;margin-bottom:1px}
+.gtt{font-size:15px;font-weight:600}
+.gi.done .gtt{text-decoration:line-through;color:#9aa1a6;font-weight:500}
+.gs{font-size:13px;color:var(--ink2);margin-top:2px}
+.gn{font-size:13px;color:#7b8389;margin-top:2px;font-style:italic}
+.gi.done .gs,.gi.done .gn{opacity:.6}
+.imp{font-size:11px;font-weight:800;color:#fff;background:var(--accent);padding:1px 7px;border-radius:999px;vertical-align:2px;white-space:nowrap}
+.gmap{flex:none;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-size:17px}
+.nav{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0}
+.navh{font-weight:700;margin-bottom:4px}
+.navr{padding:10px 0;border-top:1px solid var(--line)}
+.navr:first-of-type{border-top:0}
+.navl{font-size:14.5px}
+.navl span{display:block;color:var(--ink2);font-size:12.5px;margin-top:1px;word-break:break-word}
+.navb{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.navb .btn{text-decoration:none;color:inherit}
+.navb .btn.dark{color:#fff}
+form .hint{font-size:12px;color:var(--ink2);margin:4px 2px 0}
+.nothing{text-align:center;color:var(--ink2);padding:40px 10px}
+.nothing .e{font-size:40px}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<nav class="tabs"><div class="in" id="tabs"></div></nav>
+<button class="fab" id="fab" aria-label="Agregar">+</button>
+
+<script>
+"use strict";
+/* ---------- Config ---------- */
+const TYPES = {
+  vuelo:      {label:'Vuelo',       icon:'✈️', bg:'#dde7f1', transport:true},
+  transporte: {label:'Tren/traslado',icon:'🚆', bg:'#dcebe2', transport:true},
+  hospedaje:  {label:'Hospedaje',   icon:'🛏️', bg:'#eadff0'},
+  entrada:    {label:'Entrada',     icon:'🎟️', bg:'#f6dfd2'},
+  actividad:  {label:'Actividad',   icon:'📍', bg:'#f3e8c8'},
+  comida:     {label:'Comida',      icon:'🍽️', bg:'#f1dcdc'},
+  nota:       {label:'Nota / doc',  icon:'📝', bg:'#e6e4e0'},
+};
+const STATUS = {pendiente:'Pendiente', reservado:'Reservado', pagado:'Pagado', cancelado:'Cancelado'};
+const CURRENCIES = ['EUR','USD','ARS'];
+
+/* ---------- Storage (IndexedDB, con respaldo en memoria) ---------- */
+const Mem = (()=>{const m={items:new Map(),files:new Map(),meta:new Map()};const k={items:'id',files:'id',meta:'key'};
+  return {open:async()=>{}, all:async s=>[...m[s].values()], get:async(s,x)=>m[s].get(x), put:async(s,v)=>{m[s].set(v[k[s]],v)}, del:async(s,x)=>{m[s].delete(x)}, clear:async s=>{m[s].clear()}};})();
+const IDB = (()=>{let db;
+  const open=()=>new Promise((res,rej)=>{const r=indexedDB.open('mi-viaje',1);
+    r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('items',{keyPath:'id'});d.createObjectStore('files',{keyPath:'id'});d.createObjectStore('meta',{keyPath:'key'});};
+    r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'));});
+  const tx=(store,mode,fn)=>new Promise((res,rej)=>{const t=db.transaction(store,mode);const req=fn(t.objectStore(store));let out;
+    if(req)req.onsuccess=()=>{out=req.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error);});
+  return {open, all:s=>tx(s,'readonly',x=>x.getAll()), get:(s,k)=>tx(s,'readonly',x=>x.get(k)), put:(s,v)=>tx(s,'readwrite',x=>x.put(v)), del:(s,k)=>tx(s,'readwrite',x=>x.delete(k)), clear:s=>tx(s,'readwrite',x=>x.clear())};})();
+let DB = IDB, storageOK = true;
+
+/* ---------- State ---------- */
+const S = {view:'itin', filter:'todos', q:'', trip:null, items:[], files:[], checks:{}, guide:null, gcity:null, hideDone:false};
+const urls = new Map(); // fileId -> objectURL
+const SW_OK = (()=>{try{return 'serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost') && window.top===window.self}catch(e){return false}})();
+const INSTALLED = (()=>{try{return matchMedia('(display-mode: standalone)').matches || navigator.standalone===true}catch(e){return false}})();
+
+/* ---------- Utils ---------- */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pad = n=>String(n).padStart(2,'0');
+const todayStr = ()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const nowKey = ()=>{const d=new Date();return `${todayStr()}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const toDate = s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays = (s,n)=>{const d=toDate(s);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const diffDays = (a,b)=>Math.round((toDate(b)-toDate(a))/86400000);
+const fmtDay = s=>toDate(s).toLocaleDateString('es-AR',{weekday:'long'});
+const fmtDM = s=>toDate(s).toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+const fmtShort = s=>toDate(s).toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+const keyOf = it=>it.startDate?`${it.startDate}T${it.startTime||(it.type==='hospedaje'?'23:00':'12:00')}`:'9999';
+const sortItems = a=>a.slice().sort((x,y)=>keyOf(x).localeCompare(keyOf(y)) || (x.title||'').localeCompare(y.title||''));
+const filesOf = id=>S.files.filter(f=>f.itemId===id);
+const urlOf = f=>{if(!urls.has(f.id)&&f.blob)urls.set(f.id,URL.createObjectURL(f.blob));return urls.get(f.id)};
+const isImg = f=>/^image\//.test(f.type);
+const money = it=>it.price?`${it.currency||''} ${Number(it.price).toLocaleString('es-AR',{maximumFractionDigits:2})}`.trim():'';
+
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function confirmDlg(text, ok='Aceptar', danger=false){return new Promise(res=>{const bg=document.createElement('div');bg.className='dlg-bg';
+  bg.innerHTML=`<div class="dlg"><div style="font-size:16px;margin-bottom:16px">${esc(text)}</div><div class="btnrow"><button class="btn" data-a="0">Cancelar</button><button class="btn ${danger?'danger':'pri'}" data-a="1">${esc(ok)}</button></div></div>`;
+  bg.onclick=e=>{const a=e.target.dataset.a;if(a!==undefined||e.target===bg){bg.remove();res(a==='1')}};document.body.appendChild(bg);});}
+async function copyText(t,label='Copiado'){try{await navigator.clipboard.writeText(t);toast(label)}catch(e){toast('No se pudo copiar')}}
+
+/* ---------- Guía (checklists por ciudad) ---------- */
+const GUIDE = [{"key": "res", "name": "Antes de viajar", "dates": "Para reservar y comprar", "intro": "Lo que la guía marca para reservar o sacar con anticipación.", "sections": [{"title": "Reservas y entradas", "kind": "free", "items": [{"t": "Galleria dell'Accademia (David): entrada online, turno 8:15 del martes 19", "imp": true, "id": "res-0-0"}, {"t": "Trattoria Sostanza (Florencia), lunes 18 a las 20:30 — confirmar que abra los lunes", "imp": true, "id": "res-0-1"}, {"t": "Antica Bruschetteria Pautasso (Turín), martes 19 a las 20:00 — preguntar si sirven bagna cauda para una persona", "imp": true, "id": "res-0-2"}, {"t": "Scannabue (Turín), miércoles 20 a las 20:00 — agnolotti del plin", "imp": true, "id": "res-0-3"}, {"t": "Bouchon en Lyon para el jueves 21 (La Mère Jean o Le Bouchon des Filles)", "imp": false, "id": "res-0-4"}, {"t": "Cena de cierre del lunes 25 en Lyon (Bouchon Palais Grillet abre lunes a la noche)", "imp": false, "id": "res-0-5"}, {"t": "Pasaje Turín → Lyon del jueves 21 (micro 07:45 o tren 07:11)", "imp": false, "id": "res-0-6"}, {"t": "Viaje nocturno Lyon → Roma del martes 26", "imp": false, "id": "res-0-7"}, {"t": "Confirmar horarios de apertura de Sirha (todavía no publicados)", "imp": false, "id": "res-0-8"}]}], "from": "", "to": ""}, {"key": "flo", "name": "Florencia", "dates": "Lun 18 (noche) · Mar 19 (mañana)", "intro": "Una noche y una mañana: Ponte Vecchio iluminado, el David a la apertura y un lampredotto antes del tren de las 11:10. El lunes los museos cierran; el martes abren a las 8:15.", "sections": [{"title": "Plan por horario", "kind": "plan", "items": [{"time": "Lun 20:00", "t": "Llegada al Anglo American Hotel", "n": "Fiumicino 15:45 → Leonardo Express → Frecciarossa", "id": "flo-0-0"}, {"time": "Lun 20:30", "t": "Cena en Trattoria Sostanza", "n": "A dos cuadras del hotel. Reservar y confirmar que abra los lunes; plan B: pizza cerca", "id": "flo-0-1"}, {"time": "Lun 22:00", "t": "Caminata nocturna: Arno → Ponte Vecchio → Piazza della Signoria → Duomo", "n": "Gratis, todo a pie", "id": "flo-0-2"}, {"time": "Mar 8:15", "t": "Galleria dell'Accademia (David)", "n": "Entrada online, turno 8:15: la sala está casi vacía", "id": "flo-0-3"}, {"time": "Mar 9:30", "t": "Mercato Centrale", "n": "A 5 min de la Accademia. Lampredotto y algo para el tren", "id": "flo-0-4"}, {"time": "Mar 10:30", "t": "Check-out", "n": "", "id": "flo-0-5"}, {"time": "Mar 10:50", "t": "A pie a Santa Maria Novella", "n": "Tren 11:10 a Turín", "id": "flo-0-6"}]}, {"title": "Qué comer", "kind": "food", "items": [{"t": "Panino de lampredotto", "where": "Da Nerbone (Mercato Centrale, planta baja)", "price": "€4–6", "n": "Pedilo bagnato, con salsa verde y picante", "imp": true, "id": "flo-1-0"}, {"t": "Lampredotto en plato", "where": "Trattoria Sergio Gozzi (Piazza San Lorenzo)", "price": "barato", "n": "Solo mediodía: no entra en este itinerario", "imp": false, "id": "flo-1-1"}, {"t": "Ribollita, menú del día", "where": "Trattoria Mario (junto al mercado)", "price": "€12–16", "n": "Solo mediodía, mesas compartidas", "imp": false, "id": "flo-1-2"}, {"t": "Panino + copa de vino", "where": "I Fratellini (cerca de Signoria)", "price": "pocos euros", "n": "Para comer parado", "imp": false, "id": "flo-1-3"}, {"t": "Pollo al burro, bistecca", "where": "Trattoria Sostanza (Via del Porcellana 25/R)", "price": "no es barato", "n": "El gusto del viaje; reservar", "imp": false, "id": "flo-1-4"}, {"t": "Schiacciata", "where": "Cualquier forno", "price": "€4–10 relleno", "n": "Buena opción para el tren", "imp": false, "id": "flo-1-5"}, {"t": "Café y cornetto", "where": "Cualquier bar, en la barra", "price": "~€2–3", "n": "En la mesa cuesta más", "imp": false, "id": "flo-1-6"}]}, {"title": "Gratis para recorrer", "kind": "free", "items": [{"t": "Ponte Vecchio, mejor de noche y sin gente", "imp": false, "id": "flo-2-0"}, {"t": "Piazza della Signoria y Loggia dei Lanzi", "imp": false, "id": "flo-2-1"}, {"t": "Duomo y Baptisterio por fuera", "imp": false, "id": "flo-2-2"}, {"t": "Ventanitas del vino (buchette del vino) en el Oltrarno", "imp": false, "id": "flo-2-3"}, {"t": "Si sobra tiempo: Piazzale Michelangelo y San Miniato al Monte", "imp": false, "id": "flo-2-4"}]}], "from": "2027-01-18", "to": "2027-01-19"}, {"key": "tur", "name": "Turín", "dates": "Mar 19 (tarde) · Mié 20", "intro": "Las dos cenas son para los imperdibles: bagna cauda el martes en Pautasso y agnolotti del plin el miércoles en Scannabue. Los recorridos son gratis. El jueves 21 sale el micro a Lyon a las 07:45.", "sections": [{"title": "Plan por horario", "kind": "plan", "items": [{"time": "Mar 14:20", "t": "Llegada a Porta Nuova y al Hilton Turin Centre", "n": "", "id": "tur-0-0"}, {"time": "Mar 15:30", "t": "Via Roma (soportales) → Piazza San Carlo → Galleria Subalpina → Piazza Castello", "n": "Gratis. Gianduiotti en una confitería", "id": "tur-0-1"}, {"time": "Mar 17:00", "t": "Quadrilatero Romano, Duomo, Consolata + bicerin en Al Bicerin", "n": "Al Bicerin cierra 19:30 y no abre los miércoles", "id": "tur-0-2"}, {"time": "Mar 18:30", "t": "Vermut en Caffè Mulassano (Piazza Castello)", "n": "Con tramezzini", "id": "tur-0-3"}, {"time": "Mar 20:00", "t": "Bagna cauda en Antica Bruschetteria Pautasso", "n": "Reservar y preguntar si la sirven para una persona", "id": "tur-0-4"}, {"time": "Mié 8:30", "t": "Mercado de Porta Palazzo + Porta Palatina", "n": "Lun–vie 7–14. Comprar quesos y salame para Lyon", "id": "tur-0-5"}, {"time": "Mié 12:00", "t": "Almuerzo: tajarin y vitello tonnato en Cianci, o pizza al padellino", "n": "Menú de mediodía, más barato", "id": "tur-0-6"}, {"time": "Mié 13:30", "t": "Via Po → Piazza Vittorio Veneto → Murazzi → Parco del Valentino y Borgo Medievale", "n": "Gratis", "id": "tur-0-7"}, {"time": "Mié 16:00", "t": "Gran Madre y subida al Monte dei Cappuccini", "n": "Atardecer con la Mole y los Alpes, gratis", "id": "tur-0-8"}, {"time": "Mié 18:00", "t": "Aperitivo en Piazza Vittorio", "n": "", "id": "tur-0-9"}, {"time": "Mié 20:00", "t": "Agnolotti del plin en Scannabue (San Salvario)", "n": "Reservar. Acostarse temprano", "id": "tur-0-10"}]}, {"title": "Bagna cauda: dónde", "kind": "food", "intro": "Salsa de anchoa, ajo y aceite que se mantiene caliente en un fujot (cazuelita con vela); se mojan verduras y pan, y al final se cocina un huevo. Viajando solo preguntá «la servite per una persona?». Si no, la versión individual: peperoni con bagna cauda.", "items": [{"t": "Antica Bruschetteria Pautasso", "where": "Piazza Emanuele Filiberto 4/H (Quadrilatero)", "price": "€20", "n": "Mar–vie 19:30–22:30; sáb y dom también mediodía; lunes cerrado. Tres versiones", "imp": true, "id": "tur-1-0"}, {"t": "Trattoria Piemontese", "where": "Via Napione 45 (Vanchiglia)", "price": "€22", "n": "Cena todos los días 19–23. Plan B si Pautasso no la sirve para uno", "imp": false, "id": "tur-1-1"}, {"t": "Sotto La Luna", "where": "Via Caprera 54", "price": "€18", "n": "Lun–sáb 19–22:30. La más barata, lejos del centro", "imp": false, "id": "tur-1-2"}, {"t": "Felicin alla Consolata", "where": "Zona Consolata", "price": "barato", "n": "Confirmar horario", "imp": false, "id": "tur-1-3"}]}, {"title": "Qué comer", "kind": "food", "items": [{"t": "Agnolotti del plin", "where": "Scannabue (Largo Saluzzo 25/h)", "price": "", "n": "Al sugo d'arrosto o al tovagliolo. También en casi todas las piolas", "imp": true, "id": "tur-2-0"}, {"t": "Bicerin", "where": "Al Bicerin (Piazza della Consolata 5)", "price": "", "n": "Café, chocolate y crema; no se revuelve. Cerrado los miércoles", "imp": true, "id": "tur-2-1"}, {"t": "Vitello tonnato", "where": "Cualquier piola (Cianci)", "price": "", "n": "El original del vitel toné", "imp": false, "id": "tur-2-2"}, {"t": "Tajarin", "where": "Cianci (Quadrilatero)", "price": "", "n": "Al ragú o con manteca y salvia", "imp": false, "id": "tur-2-3"}, {"t": "Carne cruda all'albese", "where": "Piolas", "price": "", "n": "Tartar de ternera piamontesa a cuchillo", "imp": false, "id": "tur-2-4"}, {"t": "Finanziera", "where": "Consorzio", "price": "", "n": "Guiso antiguo de menudencias; poco común", "imp": false, "id": "tur-2-5"}, {"t": "Fritto misto alla piemontese", "where": "La Buta Stupa (Via Gaudenzio Ferrari 5f)", "price": "~€30", "n": "", "imp": false, "id": "tur-2-6"}, {"t": "Brasato al Barolo, bollito misto con bagnet verde", "where": "Piolas", "price": "", "n": "Platos de invierno", "imp": false, "id": "tur-2-7"}, {"t": "Pizza al padellino", "where": "Pizzerías de padellino", "price": "", "n": "Chica y alta, en sartén", "imp": false, "id": "tur-2-8"}, {"t": "Tramezzini + vermut", "where": "Caffè Mulassano (Piazza Castello)", "price": "", "n": "El vermut nació en Turín", "imp": false, "id": "tur-2-9"}, {"t": "Gofri", "where": "Gofreria Piemunteisa", "price": "muy barato", "n": "Waffle de montaña, dulce o salado", "imp": false, "id": "tur-2-10"}, {"t": "Grissini stirati", "where": "Panaderías", "price": "", "n": "Estirados a mano", "imp": false, "id": "tur-2-11"}, {"t": "Gianduiotto, bonet, zabaione, panna cotta, baci di dama", "where": "Confiterías y piolas", "price": "", "n": "", "imp": false, "id": "tur-2-12"}, {"t": "Quesos y fiambres para Lyon: Castelmagno, Bra, Toma, Robiola, salame cotto, avellanas", "where": "Porta Palazzo", "price": "", "n": "Para el micro y la cocina en Lyon", "imp": false, "id": "tur-2-13"}, {"t": "Barbera, Dolcetto, Nebbiolo, Barolo", "where": "Por copa", "price": "", "n": "Barbera y Dolcetto son los baratos", "imp": false, "id": "tur-2-14"}]}, {"title": "Gratis para recorrer", "kind": "free", "items": [{"t": "Via Roma, Piazza San Carlo, Galleria Subalpina, Piazza Castello", "imp": false, "id": "tur-3-0"}, {"t": "Quadrilatero Romano, Duomo, Consolata, Porta Palatina", "imp": false, "id": "tur-3-1"}, {"t": "Mercado de Porta Palazzo", "imp": false, "id": "tur-3-2"}, {"t": "Via Po, Piazza Vittorio Veneto, Murazzi sobre el Po", "imp": false, "id": "tur-3-3"}, {"t": "Parco del Valentino y Borgo Medievale", "imp": false, "id": "tur-3-4"}, {"t": "Gran Madre y Monte dei Cappuccini al atardecer", "imp": false, "id": "tur-3-5"}]}], "from": "2027-01-19", "to": "2027-01-20"}, {"key": "lyo", "name": "Lyon", "dates": "Jue 21 → Mar 26", "intro": "De viernes a lunes en Eurexpo; la ciudad queda para la tarde del jueves, las noches y el martes 26 entero. El Airbnb queda a ~15 min a pie de las Halles Paul Bocuse: desayuno, sándwich para la feria y algunas cenas con producto de mercado.", "sections": [{"title": "Sirha: competencias en el Arena", "kind": "plan", "items": [{"time": "Jue 21", "t": "International Catering Cup", "n": "", "id": "lyo-0-0"}, {"time": "Vie 22 y sáb 23", "t": "Coupe du Monde de la Pâtisserie", "n": "", "id": "lyo-0-1"}, {"time": "Dom 24 y lun 25", "t": "Bocuse d'Or — premiación el lunes", "n": "Horarios de apertura todavía no publicados", "id": "lyo-0-2"}]}, {"title": "Plan por horario", "kind": "plan", "items": [{"time": "Jue 12:00", "t": "Llegada a Gerland, metro B a Place Guichard y Airbnb", "n": "", "id": "lyo-1-0"}, {"time": "Jue 14:00", "t": "Halles Paul Bocuse: almuerzo picando y compras para la cocina", "n": "Quenelle, saucisson, Saint-Marcellin, ostras con blanco. Mar–sáb 7–19", "id": "lyo-1-1"}, {"time": "Jue 16:30", "t": "Presqu'île: Place Bellecour, rue Mercière y cruce a Vieux Lyon al atardecer", "n": "Gratis", "id": "lyo-1-2"}, {"time": "Jue 20:00", "t": "Cena en un bouchon (La Mère Jean o Le Bouchon des Filles)", "n": "Reservar", "id": "lyo-1-3"}, {"time": "Vie 22 → lun 25", "t": "Feria: desayuno en el Airbnb y sándwich propio", "n": "Metro + tranvía T5", "id": "lyo-1-4"}, {"time": "Vie / sáb noche", "t": "Una noche bouchon, otra cocinás en el Airbnb", "n": "", "id": "lyo-1-5"}, {"time": "Dom 24, 7:30", "t": "Mercado de Place Guichard antes del Bocuse d'Or", "n": "Domingo 6–13:30, ~40 puestos, al lado del Airbnb", "id": "lyo-1-6"}, {"time": "Lun 25, noche", "t": "Cena de cierre después de la premiación", "n": "Muchos bouchons cierran el lunes: Palais Grillet abre", "id": "lyo-1-7"}, {"time": "Mar 26, 8:00", "t": "Mercado Saint-Antoine sobre el Saône", "n": "Mar–jue 6–13", "id": "lyo-1-8"}, {"time": "Mar 26, 9:30", "t": "Vieux Lyon y traboules, Saint-Jean, subida a pie a Fourvière y teatros romanos", "n": "Gratis subiendo a pie", "id": "lyo-1-9"}, {"time": "Mar 26, 12:30", "t": "Menú de mediodía en un bouchon", "n": "~€12–20", "id": "lyo-1-10"}, {"time": "Mar 26, 14:00", "t": "Croix-Rousse: traboules, Cour des Voraces, Mur des Canuts", "n": "Gratis", "id": "lyo-1-11"}, {"time": "Mar 26, 16:30", "t": "Última pasada por las Halles: comida para el viaje nocturno", "n": "", "id": "lyo-1-12"}]}, {"title": "Bouchons baratos", "kind": "food", "intro": "El menú de mediodía es mucho más barato que la cena, y siempre hay que reservar.", "items": [{"t": "Le Tire Bouchon", "where": "Croix-Rousse (rue des Tables Claudiennes)", "price": "mediodía ~€12,50", "n": "Tablier de sapeur", "imp": false, "id": "lyo-2-0"}, {"t": "Le Bouchon des Filles", "where": "rue du Garet", "price": "mediodía ~€15", "n": "Quenelles y andouillette. Reservar", "imp": false, "id": "lyo-2-1"}, {"t": "Bouchon Palais Grillet", "where": "Cordeliers", "price": "plato €12, menú €18", "n": "Lun–vie mediodía y noche", "imp": false, "id": "lyo-2-2"}, {"t": "Bouchon des Cordeliers", "where": "rue Claudia", "price": "plato €14 mediodía; menú €32", "n": "", "imp": false, "id": "lyo-2-3"}, {"t": "La Mère Jean", "where": "rue des Marronniers (Bellecour)", "price": "menú €20", "n": "Desde 1923, chico", "imp": false, "id": "lyo-2-4"}, {"t": "Café Comptoir Abel", "where": "rue de la République", "price": "mediodía ~€16", "n": "Histórico. Reservar", "imp": false, "id": "lyo-2-5"}, {"t": "Le Café des Fédérations", "where": "Presqu'île", "price": "menú ~€22", "n": "El bouchon arquetípico", "imp": false, "id": "lyo-2-6"}]}, {"title": "Qué comer", "kind": "food", "items": [{"t": "Quenelle de brochet, sauce Nantua", "where": "Giraudet (Halles) o cualquier bouchon", "price": "", "n": "Para llevar y gratinar en el Airbnb", "imp": true, "id": "lyo-3-0"}, {"t": "Saucisson brioché o pistaché", "where": "Bouchons, charcuterías de las Halles", "price": "", "n": "", "imp": true, "id": "lyo-3-1"}, {"t": "Ostras con vino blanco", "where": "Puestos de las Halles", "price": "", "n": "El ritual del sábado o domingo a la mañana", "imp": true, "id": "lyo-3-2"}, {"t": "Cervelle de canut", "where": "Bouchons", "price": "", "n": "Queso blanco con hierbas, chalota y vino", "imp": false, "id": "lyo-3-3"}, {"t": "Salade lyonnaise", "where": "Bouchons", "price": "", "n": "Frisée, panceta, crutones y huevo poché", "imp": false, "id": "lyo-3-4"}, {"t": "Tablier de sapeur, andouillette, tête de veau", "where": "Bouchons", "price": "", "n": "Menudencias", "imp": false, "id": "lyo-3-5"}, {"t": "Gâteau de foies de volaille, gratin dauphinois", "where": "Bouchons", "price": "", "n": "", "imp": false, "id": "lyo-3-6"}, {"t": "Saint-Marcellin, Saint-Félicien", "where": "Mère Richard (Halles)", "price": "", "n": "", "imp": false, "id": "lyo-3-7"}, {"t": "Rosette y Jésus de Lyon", "where": "Charcuterías, mercados", "price": "", "n": "Para la cocina y el viaje", "imp": false, "id": "lyo-3-8"}, {"t": "Tarte aux pralines, Praluline", "where": "Pralus y panaderías", "price": "", "n": "", "imp": false, "id": "lyo-3-9"}, {"t": "Bugnes", "where": "Panaderías", "price": "", "n": "Temporada de enero a carnaval", "imp": false, "id": "lyo-3-10"}, {"t": "Chocolate", "where": "Bernachon (cours Franklin Roosevelt, 6e)", "price": "", "n": "Cerca del Airbnb. Confirmar días", "imp": false, "id": "lyo-3-11"}, {"t": "Pot lyonnais de Beaujolais o Côtes du Rhône", "where": "Bouchons", "price": "", "n": "Botella de 46 cl, la forma barata de tomar vino", "imp": false, "id": "lyo-3-12"}]}, {"title": "Gratis para recorrer", "kind": "free", "items": [{"t": "Vieux Lyon y sus traboules", "imp": false, "id": "lyo-4-0"}, {"t": "Catedral Saint-Jean", "imp": false, "id": "lyo-4-1"}, {"t": "Fourvière: basílica y mirador, subiendo a pie (el funicular se paga)", "imp": false, "id": "lyo-4-2"}, {"t": "Teatros romanos de Fourvière", "imp": false, "id": "lyo-4-3"}, {"t": "Croix-Rousse: traboules, Cour des Voraces, Mur des Canuts", "imp": false, "id": "lyo-4-4"}, {"t": "Place Bellecour, rue Mercière y muelles del Saône", "imp": false, "id": "lyo-4-5"}, {"t": "Parc de la Tête d'Or, si sobra una tarde", "imp": false, "id": "lyo-4-6"}]}], "from": "2027-01-21", "to": "2027-01-26"}, {"key": "rom", "name": "Roma", "dates": "Mié 27", "intro": "Un día a pie de Testaccio a la Fontana di Trevi, comiendo al paso. Supuesto: llegada de Lyon cerca de las 9. Vuelo AZ680 a las 22:40 desde Fiumicino T1. Con carry-on no hace falta dejar valija.", "sections": [{"title": "Plan por horario", "kind": "plan", "items": [{"time": "9:00", "t": "Llegada a Termini, café y maritozzo", "n": "", "id": "rom-0-0"}, {"time": "9:45", "t": "Metro B a Piramide", "n": "4 paradas desde Termini", "id": "rom-0-1"}, {"time": "10:15", "t": "Mercado de Testaccio: panino de Mordi e Vai y trapizzino", "n": "Lun–sáb hasta 15:30", "id": "rom-0-2"}, {"time": "11:15", "t": "Aventino: Giardino degli Aranci y cerradura de los Caballeros de Malta", "n": "Gratis", "id": "rom-0-3"}, {"time": "12:00", "t": "Bocca della Verità, Circo Massimo, Coliseo por fuera, Fori Imperiali, mirador del Campidoglio", "n": "Gratis", "id": "rom-0-4"}, {"time": "13:30", "t": "Almuerzo: carbonara o cacio e pepe; carciofo alla giudia en el Ghetto", "n": "Las cocinas cierran cerca de las 15", "id": "rom-0-5"}, {"time": "15:00", "t": "Campo de' Fiori, Piazza Navona, Pantheon, Fontana di Trevi, Piazza di Spagna", "n": "Pantheon €5; Trevi €2 para entrar al borde", "id": "rom-0-6"}, {"time": "17:30", "t": "Suplì de despedida y vuelta a Termini sin apuro", "n": "", "id": "rom-0-7"}, {"time": "18:30", "t": "Leonardo Express a Fiumicino (~32 min)", "n": "En la T1 antes de las 19:40, tres horas antes del vuelo de las 22:40", "id": "rom-0-8"}]}, {"title": "Qué comer", "kind": "food", "items": [{"t": "Panino de bollito, picchiapò o trippa", "where": "Mordi e Vai (Mercado de Testaccio, box 15)", "price": "€5–7", "n": "Cocina romana de olla en pan. Cerrado domingos", "imp": true, "id": "rom-1-0"}, {"t": "Suplì", "where": "Suplì Roma (Via del Seminario 105) o cualquier friggitoria", "price": "€1,50–2,50", "n": "Arroz frito con mozzarella que hila", "imp": true, "id": "rom-1-1"}, {"t": "Carbonara, cacio e pepe, amatriciana, gricia", "where": "Trattorias de barrio", "price": "€12–18", "n": "Las cuatro pastas romanas", "imp": true, "id": "rom-1-2"}, {"t": "Trapizzino", "where": "Trapizzino (Via Giovanni Branca 88, Testaccio)", "price": "€4–5", "n": "Bolsillo de pizza relleno de guiso romano", "imp": false, "id": "rom-1-3"}, {"t": "Carciofo alla giudia", "where": "Restaurantes del Ghetto", "price": "", "n": "Alcaucil frito entero", "imp": false, "id": "rom-1-4"}, {"t": "Pizza bianca, pizza al taglio", "where": "Forno Campo de' Fiori", "price": "barato", "n": "Para comer caminando", "imp": false, "id": "rom-1-5"}, {"t": "Maritozzo", "where": "Pastelerías", "price": "", "n": "Pan dulce relleno de crema", "imp": false, "id": "rom-1-6"}, {"t": "Porchetta", "where": "Panino al paso", "price": "", "n": "", "imp": false, "id": "rom-1-7"}, {"t": "Coda alla vaccinara, abbacchio", "where": "Trattorias", "price": "", "n": "Si sobra apetito", "imp": false, "id": "rom-1-8"}, {"t": "Gelato", "where": "Heladerías artesanales", "price": "~€2,50", "n": "Evitá las de montañas de colores", "imp": false, "id": "rom-1-9"}]}, {"title": "Gratis para recorrer", "kind": "free", "items": [{"t": "Coliseo y Foro Romano por fuera, desde Via dei Fori Imperiali", "imp": false, "id": "rom-2-0"}, {"t": "Mirador del Campidoglio sobre el Foro", "imp": false, "id": "rom-2-1"}, {"t": "Aventino: Giardino degli Aranci y cerradura de los Caballeros de Malta", "imp": false, "id": "rom-2-2"}, {"t": "Circo Massimo y Bocca della Verità por fuera", "imp": false, "id": "rom-2-3"}, {"t": "Campo de' Fiori, Piazza Navona, Piazza di Spagna", "imp": false, "id": "rom-2-4"}, {"t": "Fontana di Trevi desde la plaza (entrar al borde cuesta €2)", "imp": false, "id": "rom-2-5"}]}], "from": "2027-01-27", "to": "2027-01-27"}];
+
+/* ---------- Seed (primer uso) ---------- */
+const SEED = {"trip": {"key": "trip", "name": "Europa · Enero 2027", "start": "2027-01-17", "end": "2027-01-27"}, "items": [{"type": "vuelo", "title": "Buenos Aires → Roma", "startDate": "2027-01-17", "startTime": "", "endDate": "2027-01-18", "endTime": "15:45", "from": "EZE", "to": "FCO (Fiumicino)", "place": "", "code": "", "provider": "ITA Airways", "price": "", "currency": "EUR", "status": "reservado", "link": "", "notes": "Vuelo directo, ida y vuelta.\nTarifa Economy Light: solo equipaje de mano.\nAterriza en Fiumicino a las 15:45 (hora de Roma).\nCompletar: hora de salida, nº de vuelo y código de reserva.", "addr": "-34.8150,-58.5348", "addr2": "41.8003,12.2389", "id": "seed00"}, {"type": "transporte", "title": "Fiumicino → Florencia", "startDate": "2027-01-18", "startTime": "", "endDate": "", "endTime": "", "from": "Aeropuerto Fiumicino", "to": "Firenze Santa Maria Novella", "place": "", "code": "", "provider": "Trenitalia", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Lo más rápido posible después de aterrizar (15:45):\n1) Leonardo Express Fiumicino → Roma Termini (~32 min).\n2) Tren rápido (Frecciarossa / Italo) Roma Termini → Firenze S.M.N. (~1h30).\nDefinir horario según cómo salga del aeropuerto.", "addr": "41.7934,12.2522", "addr2": "43.7764,11.2480", "id": "seed01"}, {"type": "hospedaje", "title": "Anglo American Hotel Florence", "startDate": "2027-01-18", "startTime": "", "endDate": "2027-01-19", "endTime": "12:00", "from": "", "to": "", "place": "Via Solferino 6 (esq. Via Garibaldi 9), Florencia", "code": "", "provider": "Hilton · Curio Collection", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Una noche, de paso hacia Turín.\nCheck-in desde las 15:00 · check-out hasta las 12:00.\nCompletar código de reserva y marcar como reservado.", "addr": "43.775087,11.240761", "addr2": "", "id": "seed02"}, {"type": "transporte", "title": "Florencia → Turín (Frecciarossa)", "startDate": "2027-01-19", "startTime": "11:10", "endDate": "2027-01-19", "endTime": "14:20", "from": "Firenze S.M.N.", "to": "Torino Porta Nuova", "place": "", "code": "", "provider": "Trenitalia · Frecciarossa", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Elegido el Frecciarossa de las 11:10 (salir antes del check-out de las 12).\nCompletar código y asiento cuando compres el pasaje.", "addr": "43.7764,11.2480", "addr2": "45.0621,7.6785", "id": "seed03"}, {"type": "hospedaje", "title": "Hilton Turin Centre", "startDate": "2027-01-19", "startTime": "", "endDate": "2027-01-21", "endTime": "", "from": "", "to": "", "place": "Via dell'Arcivescovado 18, 10121 Torino", "code": "", "provider": "Hilton", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Completar código de reserva y marcar como reservado.\nOjo: el 21 sale temprano a Lyon (micro 07:45 o tren 07:11).", "addr": "Hilton Turin Centre, Via dell'Arcivescovado 18, 10121 Torino", "addr2": "", "id": "seed04"}, {"type": "transporte", "title": "Turín → Lyon (micro directo)", "startDate": "2027-01-21", "startTime": "07:45", "endDate": "2027-01-21", "endTime": "12:00", "from": "Turín · Corso Vittorio Emanuele II 131/H", "to": "Lyon Gerland (52 Av. Tony Garnier)", "place": "", "code": "", "provider": "", "price": "16.98", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Opción que más me interesó por horario y precio: 4h15, € 16,98 (la más barata).\nParada en Turín: Corso Vittorio Emanuele II 131/H (andenes 6 a 12), frente al Palagiustizia, cerca de Porta Susa.\nEn Lyon: desde Gerland, metro B directo a Place Guichard + ~10 min a pie al Airbnb.\n\nAlternativa: Frecciarossa directo 07:11 Torino Porta Susa → 11:15 Lyon Part-Dieu.", "addr": "Corso Vittorio Emanuele II 131/H, 10138 Torino", "addr2": "52 Avenue Tony Garnier, 69007 Lyon", "id": "seed05"}, {"type": "hospedaje", "title": "Airbnb Lyon (Xavier)", "startDate": "2027-01-21", "startTime": "", "endDate": "2027-01-26", "endTime": "", "from": "", "to": "", "place": "1 Impasse Molière / rue Molière, 69006 Lyon", "code": "", "provider": "Airbnb · anfitrión Xavier", "price": "", "currency": "EUR", "status": "reservado", "link": "", "notes": "Con cocina: para comprar en el mercado y cocinar.\nZona Place Guichard (Lyon 6e).\nA Eurexpo: metro + tranvía T5.\nCompletar horario de check-in/check-out y código.", "addr": "1 Impasse Molière, 69006 Lyon", "addr2": "", "id": "seed06"}, {"type": "entrada", "title": "Sirha Lyon 2027", "startDate": "2027-01-21", "startTime": "", "endDate": "2027-01-25", "endTime": "", "from": "", "to": "", "place": "Eurexpo, Chassieu (Lyon)", "code": "", "provider": "", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Feria oficial: 21 al 25 de enero.\nQuedarme hasta el final: Copa del Mundo de Pastelería y Bocuse d'Or, con la entrega de premios.\nCómo llegar: metro + tranvía T5 a Eurexpo.\nCompletar si ya tengo la acreditación/entrada.", "addr": "Eurexpo Lyon, Chassieu", "addr2": "", "id": "seed07"}, {"type": "actividad", "title": "Bocuse d'Or — final y premiación", "startDate": "2027-01-24", "startTime": "", "endDate": "2027-01-25", "endTime": "", "from": "", "to": "", "place": "Eurexpo, Sirha", "code": "", "provider": "", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "", "addr": "Eurexpo Lyon, Chassieu", "addr2": "", "id": "seed08"}, {"type": "transporte", "title": "Lyon → Roma (nocturno)", "startDate": "2027-01-26", "startTime": "", "endDate": "", "endTime": "", "from": "Lyon", "to": "Roma", "place": "", "code": "", "provider": "", "price": "", "currency": "EUR", "status": "pendiente", "link": "", "notes": "Idea: viajar de noche en micro o tren, saliendo de Lyon el 26 después del check-out del Airbnb.\nEl vuelo de vuelta sale de Roma el 27 a la noche.", "addr": "", "addr2": "", "id": "seed09"}, {"type": "vuelo", "title": "Roma → Buenos Aires", "startDate": "2027-01-27", "startTime": "", "endDate": "", "endTime": "", "from": "FCO (Fiumicino)", "to": "EZE", "place": "", "code": "", "provider": "ITA Airways", "price": "", "currency": "EUR", "status": "reservado", "link": "", "notes": "Vuelo directo, sale a la noche.\nEconomy Light (solo carry-on).\nCompletar horario, nº de vuelo y código de reserva.", "addr": "41.8003,12.2389", "addr2": "", "id": "seed10"}]};
+function seed(){return JSON.parse(JSON.stringify(SEED))}
+
+/* ---------- Migración: suma direcciones de mapa a los datos del viaje ya cargados ---------- */
+async function migrate(){
+  const done=await DB.get('meta','mig-maps'); if(done) return;
+  const OLD_PLACE={'Anglo American Hotel Florence (Curio Collection by Hilton), Florencia':1,'Hilton Turin Centre, Turín':1,'Lyon Gerland (Av. Tony Garnier)':1};
+  for(const s of SEED.items){
+    const it=S.items.find(i=>i.id===s.id); if(!it) continue; let ch=false;
+    if(!it.addr&&s.addr){it.addr=s.addr;ch=true} if(!it.addr2&&s.addr2){it.addr2=s.addr2;ch=true}
+    if(OLD_PLACE[it.place]&&s.place){it.place=s.place;ch=true}
+    if(OLD_PLACE[it.to]&&s.to){it.to=s.to;ch=true}
+    if(ch) await DB.put('items',it);
+  }
+  await DB.put('meta',{key:'mig-maps',v:1}); S.items=await DB.all('items');
+}
+
+/* ---------- Mapas ---------- */
+const UA=navigator.userAgent||'';
+const IS_IOS=/iPad|iPhone|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const IS_ANDROID=/Android/i.test(UA);
+const COORD=/^\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/;
+function navLinks(q,label){
+  const m=q.match(COORD), dest=m?`${m[1]},${m[2]}`:q, e=encodeURIComponent, L=[];
+  L.push(['Google Maps',`https://www.google.com/maps/dir/?api=1&destination=${e(dest)}&travelmode=walking`]);
+  return L;
+}
+function navTargets(it){
+  const T=TYPES[it.type]||TYPES.nota, out=[];
+  if(T.transport){
+    if(it.addr) out.push({lbl:'Salida', name:it.from||'Salida', q:it.addr});
+    if(it.addr2) out.push({lbl:'Llegada', name:it.to||'Llegada', q:it.addr2});
+  } else {
+    const q=it.addr||it.place; if(q) out.push({lbl:it.type==='hospedaje'?'Alojamiento':'Lugar', name:it.title, q});
+  }
+  return out;
+}
+function navPanel(it){
+  const ts=navTargets(it); if(!ts.length) return '';
+  return `<div class="nav"><div class="navh">🧭 Cómo llegar</div>${ts.map(t=>{
+    const m=t.q.match(COORD);
+    return `<div class="navr"><div class="navl"><b>${esc(t.lbl)}:</b> ${esc(t.name)}<span>${m?'📍 '+esc(m[1]+', '+m[2]):esc(t.q)}</span></div>
+      <div class="navb">${navLinks(t.q,t.name).map(([n,u])=>`<a class="btn sm dark" href="${esc(u)}" target="_blank" rel="noopener">📍 Abrir en Google Maps</a>`).join('')}<button class="btn sm" data-copy="${esc(m?m[1]+', '+m[2]:t.q)}">Copiar</button></div></div>`}).join('')}
+    <div class="muted" style="margin-top:8px">Funciona sin conexión con los mapas que bajaste en Google Maps.</div></div>`;
+}
+
+/* ---------- Load ---------- */
+async function load(){
+  try{ if(!('indexedDB' in window)) throw 0; await IDB.open(); DB=IDB; }
+  catch(e){ DB=Mem; storageOK=false; }
+  let trip = await DB.get('meta','trip');
+  if(!trip){ // instalación nueva: arranca vacía
+    trip={key:'trip',name:'Mi viaje',start:'',end:''}; await DB.put('meta',trip);
+    await DB.put('meta',{key:'guide',v:[]}); await DB.put('meta',{key:'mig-maps',v:1}); }
+  S.trip=trip; S.items=await DB.all('items'); S.files=await DB.all('files');
+  await migrate();
+  const ck=await DB.get('meta','checks'); S.checks=(ck&&ck.v)||{};
+  const gd=await DB.get('meta','guide');
+  if(gd){S.guide=gd.v}else{S.guide=cloneGuide(); await saveGuide();} // quien ya tenía este viaje conserva su guía
+  let pt=false; S.guide.forEach(c=>{const o=GUIDE.find(x=>x.key===c.key); if(o&&c.from===undefined){c.from=o.from;c.to=o.to;pt=true}}); if(pt) await saveGuide();
+  try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+}
+
+/* ---------- Render ---------- */
+function render(){
+  const v=S.view;
+  $('#tabs').innerHTML=[['itin','🗓️','Itinerario'],['res','🎫','Reservas'],['guia','✅','Guía'],['docs','📎','Archivos'],['cfg','⚙️','Ajustes']]
+    .map(([k,e,l])=>`<button data-tab="${k}" class="${v===k?'on':''}"><span class="e">${e}</span>${l}</button>`).join('');
+  $('#fab').style.display = (v==='cfg'||v==='guia')?'none':'block';
+  const app=$('#app');
+  app.innerHTML = v==='itin'?viewItin(): v==='res'?viewRes(): v==='guia'?viewGuide(): v==='docs'?viewDocs(): viewCfg();
+  if(v==='res'){const q=$('#q'); if(q){q.oninput=e=>{S.q=e.target.value;renderList()}; } renderList();}
+}
+
+function banners(){
+  let h='';
+  if(!storageOK) h+=`<div class="banner"><b>Atención:</b> este navegador no permite guardar datos. Lo que cargues se pierde al cerrar.</div>`;
+  else if(!SW_OK && !INSTALLED) h+=`<div class="banner"><b>Vista previa.</b> Para usarla sin conexión en el celular, instalala desde tu propio enlace — ver <a class="lnk" href="#" data-tab="cfg">Ajustes</a>.</div>`;
+  return h;
+}
+
+function countdown(){
+  const t=todayStr(), s=S.trip.start, e=S.trip.end;
+  if(!s) return '';
+  if(t<s){const n=diffDays(t,s);return n===1?'Sale mañana':`Faltan ${n} días`}
+  if(t<=e) return `Día ${diffDays(s,t)+1} de ${diffDays(s,e)+1}`;
+  return 'Viaje terminado';
+}
+
+function cardHTML(it, opts={}){
+  const T=TYPES[it.type]||TYPES.nota, nf=filesOf(it.id).length;
+  const meta = T.transport && (it.from||it.to) ? `${esc(it.from)} → ${esc(it.to)}${it.provider?' · '+esc(it.provider):''}` : esc(it.place||it.provider||'');
+  const time = opts.showDate && it.startDate ? fmtShort(it.startDate)+(it.startTime?' · '+it.startTime:'') : (it.startTime||'');
+  return `<button class="card" data-open="${it.id}"><div class="ic" style="background:${T.bg}">${T.icon}</div><div class="body">
+    <div class="row1"><div class="title">${esc(it.title||T.label)}</div><div class="time">${esc(time)}</div></div>
+    ${meta?`<div class="meta">${meta}</div>`:''}
+    <div class="tags">${it.status&&it.status!=='reservado'?`<span class="tag ${it.status}">${STATUS[it.status]}</span>`:''}${it.code?`<span class="tag code">${esc(it.code)}</span>`:''}${nf?`<span class="tag">📎 ${nf}</span>`:''}</div>
+  </div></button>`;
+}
+
+function nextItem(){const n=nowKey(), t=todayStr();
+  return sortItems(S.items.filter(i=>i.startDate&&i.status!=='cancelado'&&(i.startTime?keyOf(i)>=n:i.startDate>=t)))[0]}
+
+function viewItin(){
+  const tr=S.trip, items=S.items.filter(i=>i.status!=='cancelado');
+  let h=`<header class="top"><div class="eyebrow">${esc(countdown())}</div><h1>${esc(tr.name)}</h1>
+    <div class="sub">${tr.start?fmtDM(tr.start):''}${tr.end?' → '+fmtDM(tr.end):''}</div></header>${banners()}
+    <button class="askbtn" data-ask="">✨ Preguntar a Claude</button>`;
+  const nx=nextItem();
+  if(nx){const T=TYPES[nx.type]||TYPES.nota;
+    h+=`<div class="next" data-open="${nx.id}"><div class="eyebrow">Próximo</div><div class="t">${T.icon} ${esc(nx.title)}</div>
+      <div class="m">${fmtShort(nx.startDate)}${nx.startTime?' · '+nx.startTime:''}${nx.code?' · '+esc(nx.code):''}</div>
+      ${(()=>{const fs=filesOf(nx.id);if(!fs.length)return '';
+        return `<div class="tix">${fs.map((f,k)=>`<button class="tixb" data-view="${f.id}" data-scan="1">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:'<span>📄</span>'}<b>🎫 ${fs.length>1?'Boleto '+(k+1):'Ver boleto'}</b></button>`).join('')}</div>`})()}</div>`;}
+  // rango de días
+  const dated=items.filter(i=>i.startDate);
+  let a=tr.start||dated.map(i=>i.startDate).sort()[0], b=tr.end||a;
+  dated.forEach(i=>{if(i.startDate<a)a=i.startDate; const e=i.endDate||i.startDate; if(e>b)b=e;});
+  if(a){
+    const today=todayStr();
+    for(let d=a, guard=0; d<=b && guard<120; d=addDays(d,1),guard++){
+      const starts=sortItems(items.filter(i=>i.startDate===d));
+      const conts=items.filter(i=>i.startDate&&i.endDate&&i.startDate<d&&i.endDate>=d);
+      h+=`<section class="day"><div class="dayh ${d===today?'today':''}"><span class="n">${fmtDay(d)}</span><span class="d">${fmtDM(d)}${d===today?' · hoy':''}</span></div>`;
+      conts.forEach(i=>{const T=TYPES[i.type]||TYPES.nota;
+        const lbl = i.type==='hospedaje' ? (i.endDate===d?`Check-out · ${esc(i.title)}${i.endTime?' · '+i.endTime:''}`:`Noche en ${esc(i.title||i.place)}`)
+          : `${esc(i.title)} · día ${diffDays(i.startDate,d)+1} de ${diffDays(i.startDate,i.endDate)+1}`;
+        h+=`<div class="cont" data-open="${i.id}">${T.icon} <span>${lbl}</span></div>`;});
+      h+=starts.map(i=>cardHTML(i)).join('');
+      if(!starts.length&&!conts.length) h+=`<div class="empty-day">Día libre</div>`;
+      h+=`</section>`;
+    }
+  }
+  const und=sortItems(items.filter(i=>!i.startDate));
+  if(und.length){h+=`<h2>Sin fecha todavía</h2>`+und.map(i=>cardHTML(i)).join('');}
+  if(!S.items.length) h+=`<div class="nothing"><div class="e">🧳</div>Todavía no cargaste nada. Tocá <b>+</b> para empezar.</div>`;
+  return h;
+}
+
+function viewRes(){
+  const chips=[['todos','Todos'],['pendiente','⏳ Pendientes'],...Object.entries(TYPES).map(([k,t])=>[k,t.icon+' '+t.label])];
+  const total=sumTotals();
+  return `<header class="top"><div class="eyebrow">Todo lo cargado</div><h1>Reservas</h1>${total?`<div class="sub">${total}</div>`:''}</header>
+    <input class="search" id="q" type="search" placeholder="Buscar (código, lugar, nombre…)" value="${esc(S.q)}">
+    <div class="chips">${chips.map(([k,l])=>`<button class="chip ${S.filter===k?'on':''}" data-filter="${k}">${l}</button>`).join('')}</div>
+    <div id="list"></div>`;
+}
+function sumTotals(){const t={};S.items.forEach(i=>{if(i.price&&i.status!=='cancelado'){const c=i.currency||'?';t[c]=(t[c]||0)+Number(i.price)}});
+  const parts=Object.entries(t).map(([c,v])=>`${c} ${v.toLocaleString('es-AR',{maximumFractionDigits:0})}`);return parts.length?'Total cargado: '+parts.join(' · '):''}
+function renderList(){
+  const q=S.q.trim().toLowerCase();
+  let l=S.items.filter(i=> S.filter==='todos'||(S.filter==='pendiente'?i.status==='pendiente':i.type===S.filter));
+  if(q) l=l.filter(i=>[i.title,i.code,i.place,i.provider,i.from,i.to,i.notes].join(' ').toLowerCase().includes(q));
+  const el=$('#list'); if(!el)return;
+  el.innerHTML = l.length? sortItems(l).map(i=>cardHTML(i,{showDate:true})).join('') : `<div class="nothing"><div class="e">🔍</div>Nada por acá.</div>`;
+}
+
+const cloneGuide=()=>JSON.parse(JSON.stringify(GUIDE));
+async function saveGuide(){try{await DB.put('meta',{key:'guide',v:S.guide})}catch(e){toast('Error al guardar')}}
+function defaultCity(){const t=todayStr(), G=S.guide; if(!G.length)return null;
+  const hit=G.find(c=>c.from&&c.from<=t&&t<=(c.to||c.from)); if(hit)return hit.key;
+  const dated=G.filter(c=>c.from); if(dated.length&&t>dated.map(c=>c.to||c.from).sort().pop()) return dated[dated.length-1].key;
+  return G[0].key;}
+function cityDates(c){if(c.dates)return c.dates; if(!c.from)return ''; return fmtShort(c.from)+(c.to&&c.to!==c.from?' → '+fmtShort(c.to):'')}
+const GENERIC=/^(Cualquier|Piolas|Bouchons|Panaderías|Confiterías|Trattorias|Pastelerías|Heladerías|Restaurantes|Charcuterías|Por copa|Pizzerías|Panino|Puestos|Ver la tabla)/i;
+function guideMapUrl(it,city){const q=it.where&&!GENERIC.test(it.where)?it.where.replace(/\s*\(.*?\)\s*/g,' ').split(' o ')[0]:(it.where?'':it.t);
+  if(!q)return '';return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q.trim()+', '+city)}`}
+function cityCount(c){let n=0,d=0;c.sections.forEach(s=>s.items.forEach(i=>{n++;if(S.checks[i.id])d++}));return [d,n]}
+function viewGuide(){
+  const G=S.guide;
+  if(!G.length) return `<header class="top"><div class="eyebrow">Qué hacer y qué comer</div><h1>Guía</h1></header>
+    <div class="nothing"><div class="e">🗺️</div>Todavía no hay guía para este viaje.<br><span class="muted">Agregá una ciudad (o una lista como "Antes de viajar") y adentro sus secciones.</span>
+    <div class="btnrow" style="justify-content:center"><button class="btn pri" data-gcityedit="">+ Agregar ciudad</button></div></div>`;
+  if(!S.gcity||!G.find(x=>x.key===S.gcity))S.gcity=defaultCity();
+  const c=G.find(x=>x.key===S.gcity)||G[0]; const [d,n]=cityCount(c);
+  const cityName=c.key==='res'?'':c.name;
+  let h=`<header class="top"><div class="eyebrow">Qué hacer y qué comer</div><h1>Guía</h1></header>
+  <button class="askbtn" data-ask="">✨ Preguntar a Claude</button>
+  <div class="chips">${G.map(x=>{const [a,b]=cityCount(x);return `<button class="chip ${x.key===c.key?'on':''}" data-gcity="${x.key}">${esc(x.name)} <span style="opacity:.6">${a}/${b}</span></button>`}).join('')}<button class="chip" data-gcityedit="">+ Ciudad</button></div>
+  <div class="gintro"><div class="grow" style="margin:0"><div class="eyebrow">${esc(cityDates(c))||'&nbsp;'}</div><button class="btn sm" data-gcityedit="${c.key}">Editar</button></div>${c.intro?`<p>${esc(c.intro)}</p>`:'<div style="height:8px"></div>'}
+    <div class="bar"><i style="width:${n?Math.round(d/n*100):0}%"></i></div>
+    <div class="grow"><span class="muted">${d} de ${n} hechos</span><button class="btn sm" data-hide>${S.hideDone?'Mostrar hechos':'Ocultar hechos'}</button></div></div>`;
+  c.sections.forEach((s,si)=>{
+    const items=s.items.filter(i=>!(S.hideDone&&S.checks[i.id]));
+    h+=`<div class="gsh"><h2>${esc(s.title)}</h2><button class="btn sm" data-gsec="${si}" aria-label="Editar sección">✎</button><button class="btn sm" data-gadd="${si}">+ Agregar</button></div>${s.intro?`<p class="muted gsi">${esc(s.intro)}</p>`:''}`;
+    if(!items.length){h+=`<div class="empty-day">${s.items.length?'Todo hecho ✓':'Vacío: tocá + Agregar'}</div>`;return}
+    h+=`<div class="glist">`+items.map(i=>{const on=!!S.checks[i.id];const map=s.kind!=='plan'&&cityName?guideMapUrl(i,cityName):'';
+      const sub=[i.where,i.price].filter(Boolean).join(' · ');
+      return `<div class="gi ${on?'done':''}"><button class="gck" data-check="${i.id}" aria-label="Marcar">${on?'✓':''}</button>
+        <div class="gb" data-gedit="${si}|${i.id}">${i.time?`<span class="gt">${esc(i.time)}</span>`:''}<div class="gtt">${i.imp?'<span class="imp">★ Imperdible</span> ':''}${esc(i.t)}</div>
+        ${sub?`<div class="gs">${esc(sub)}</div>`:''}${i.n?`<div class="gn">${esc(i.n)}</div>`:''}</div>
+        ${map?`<a class="gmap" href="${esc(map)}" target="_blank" rel="noopener" aria-label="Ver en el mapa">🧭</a>`:''}</div>`}).join('')+`</div>`;
+  });
+  if(!c.sections.length) h+=`<div class="nothing">Sin secciones todavía.<br><span class="muted">Por ejemplo: "Plan por horario", "Qué comer", "Para recorrer".</span></div>`;
+  h+=`<p class="muted" style="text-align:center;margin-top:24px">Tocá un punto para editarlo o borrarlo. Precios aproximados: confirmá horarios y días de cierre.</p>
+    <div class="btnrow"><button class="btn" data-gsec="new">+ Agregar sección</button></div>`;
+  return h;
+}
+
+function viewDocs(){
+  const fs=S.files.slice().sort((a,b)=>{const ia=S.items.find(i=>i.id===a.itemId),ib=S.items.find(i=>i.id===b.itemId);return keyOf(ia||{}).localeCompare(keyOf(ib||{}))});
+  let h=`<header class="top"><div class="eyebrow">Pasajes, QR, vouchers</div><h1>Archivos</h1><div class="sub">Guardados en el teléfono: se ven sin conexión.</div></header>`;
+  if(!fs.length) return h+`<div class="nothing"><div class="e">📎</div>Adjuntá capturas o PDFs desde cada reserva.<br><span class="muted">Tip: para los QR, una captura de pantalla funciona mejor que el PDF.</span></div>`;
+  h+=`<div class="grid">`+fs.map(f=>{const it=S.items.find(i=>i.id===f.itemId);
+    return `<button class="file" data-view="${f.id}"><div class="th">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:'📄'}</div><div class="cap"><b>${esc(it?it.title:'—')}</b><span>${esc(f.name)}</span></div></button>`}).join('')+`</div>`;
+  return h;
+}
+
+function viewCfg(){
+  const t=S.trip;
+  return `<header class="top"><div class="eyebrow">Configuración</div><h1>Ajustes</h1></header>
+  <form id="tripf" class="panel"><div class="f"><label>Nombre del viaje</label><input name="name" value="${esc(t.name)}"></div>
+    <div class="two"><div class="f"><label>Desde</label><input type="date" name="start" value="${esc(t.start)}"></div><div class="f"><label>Hasta</label><input type="date" name="end" value="${esc(t.end)}"></div></div>
+    <div class="btnrow"><button class="btn dark" type="submit">Guardar</button></div></form>
+  <h2>Copia de seguridad</h2>
+  <div class="panel"><p>Todo vive solo en este teléfono. Hacé una copia de vez en cuando (incluye los archivos adjuntos) y guardala en Drive o mandátela por mail.</p>
+    <div class="btnrow"><button class="btn pri" id="exp">Descargar copia</button><button class="btn" id="expc">Copiar como texto</button></div>
+    <div class="btnrow"><label class="btn" style="text-align:center">Restaurar desde archivo<input type="file" id="impf" accept=".json,application/json" hidden></label><button class="btn" id="impt">Pegar texto</button></div>
+    <p class="muted" id="stinfo"></p></div>
+  <h2>Usar sin conexión</h2>
+  <div class="panel">${SW_OK?`<p>✅ ${INSTALLED?'App instalada.':'Esta versión ya funciona sin conexión.'} ${INSTALLED?'':'Instalala en la pantalla de inicio para abrirla como una app:'}</p>`:`<p>Estás en la vista previa. Para tenerla sin conexión, abrí tu enlace propio de la app en el celular e instalala:</p>`}
+    <p><b>Android (Chrome):</b> menú ⋮ → <i>Instalar app</i> o <i>Agregar a la pantalla principal</i>.</p>
+    <p><b>iPhone (Safari):</b> botón Compartir → <i>Agregar a inicio</i>.</p>
+    <p class="muted">Abrila una vez con conexión después de instalar; desde ahí funciona en modo avión.</p></div>
+  <h2>Terminar este viaje</h2>
+  <div class="panel"><p>Para usar la app en otro viaje: primero tocá <b>Descargar copia</b> (arriba) y guardá el archivo. Así este viaje queda guardado y lo podés volver a abrir cuando quieras con <b>Restaurar desde archivo</b>.</p>
+    <p>Después, <b>Empezar un viaje nuevo</b> borra reservas, archivos, guía y tildados, y deja la app vacía.</p>
+    <div class="btnrow"><button class="btn danger" id="wipe">Empezar un viaje nuevo</button></div></div>
+  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v8</p>`;
+}
+
+/* ---------- Editor de la guía ---------- */
+function editGuideItem(si,id){
+  const c=S.guide.find(x=>x.key===S.gcity); const s=c.sections[si]; const idx=id?s.items.findIndex(i=>i.id===id):-1;
+  const it=idx>=0?s.items[idx]:{t:'',time:'',where:'',price:'',n:'',imp:false};
+  const plan=s.kind==='plan';
+  openSheet(`<div class="eyebrow">${esc(c.name)} · ${esc(s.title)}</div><h3 style="margin-bottom:10px">${idx>=0?'Editar':'Agregar'}</h3>
+  <form id="gf" autocomplete="off">
+    ${plan?`<div class="f"><label>Cuándo</label><input name="time" value="${esc(it.time||'')}" placeholder="Ej: Mar 15:30"></div>`:''}
+    <div class="f"><label>Qué</label><input name="t" required value="${esc(it.t)}"></div>
+    <div class="f"><label>Dónde</label><input name="where" value="${esc(it.where||'')}" placeholder="Lugar o dirección (para el mapa)"></div>
+    ${plan?'':`<div class="f"><label>Precio</label><input name="price" value="${esc(it.price||'')}" placeholder="Ej: €5–7"></div>`}
+    <div class="f"><label>Nota</label><textarea name="n" style="min-height:70px">${esc(it.n||'')}</textarea></div>
+    <label class="impck"><input type="checkbox" name="imp" ${it.imp?'checked':''}> ★ Imperdible</label>
+    ${idx>=0?`<div class="btnrow"><button type="button" class="btn sm" data-gmove="-1" ${idx===0?'disabled':''}>↑ Subir</button><button type="button" class="btn sm" data-gmove="1" ${idx===s.items.length-1?'disabled':''}>↓ Bajar</button></div>`:''}
+    <div class="btnrow">${idx>=0?'<button type="button" class="btn danger" data-gdel>Borrar</button>':'<button type="button" class="btn" data-cancel>Cancelar</button>'}<button class="btn pri">Guardar</button></div>
+  </form>`);
+  const f=$('#gf');
+  f.addEventListener('click',async e=>{
+    if(e.target.closest('[data-cancel]'))closeSheet();
+    const mv=e.target.closest('[data-gmove]');
+    if(mv){const d=+mv.dataset.gmove,j=idx+d; if(j<0||j>=s.items.length)return; [s.items[idx],s.items[j]]=[s.items[j],s.items[idx]];
+      await saveGuide(); closeSheet(); render(); toast(d<0?'Subido':'Bajado'); return}
+    if(e.target.closest('[data-gdel]')){if(!await confirmDlg(`¿Borrar "${it.t}" de la guía?`,'Borrar',true))return;
+      s.items.splice(idx,1); delete S.checks[it.id]; await DB.put('meta',{key:'checks',v:S.checks}); await saveGuide(); closeSheet(); const y=scrollY; render(); scrollTo(0,y); toast('Borrado')}
+  });
+  f.addEventListener('submit',async e=>{e.preventDefault(); const d=Object.fromEntries(new FormData(f).entries());
+    const rec=Object.assign({},it,{t:d.t.trim(),where:(d.where||'').trim(),n:(d.n||'').trim(),imp:!!d.imp});
+    if(plan)rec.time=(d.time||'').trim(); else rec.price=(d.price||'').trim();
+    if(idx>=0)s.items[idx]=rec; else {rec.id='u'+uid(); s.items.push(rec)}
+    await saveGuide(); closeSheet(); const y=scrollY; render(); scrollTo(0,y); toast('Guardado')});
+}
+
+function editCity(key){
+  const c=key?S.guide.find(x=>x.key===key):null; const v=c||{name:'',from:'',to:'',intro:''};
+  openSheet(`<div class="eyebrow">Guía</div><h3 style="margin-bottom:10px">${c?'Editar ciudad':'Nueva ciudad'}</h3>
+  <form id="cf" autocomplete="off"><div class="f"><label>Nombre</label><input name="name" required value="${esc(v.name)}" placeholder="Ej: París, o Antes de viajar"></div>
+  <div class="two"><div class="f"><label>Desde (opcional)</label><input type="date" name="from" value="${esc(v.from||'')}"></div><div class="f"><label>Hasta</label><input type="date" name="to" value="${esc(v.to||'')}"></div></div>
+  <div class="hint" style="font-size:12px;color:var(--ink2);margin:4px 2px">Con fechas, la guía abre sola en esta ciudad esos días.</div>
+  <div class="f"><label>Descripción (opcional)</label><textarea name="intro" style="min-height:70px">${esc(v.intro||'')}</textarea></div>
+  <div class="btnrow">${c?'<button type="button" class="btn danger" data-cdel>Borrar ciudad</button>':'<button type="button" class="btn" data-cancel>Cancelar</button>'}<button class="btn pri">Guardar</button></div></form>`);
+  const f=$('#cf');
+  f.addEventListener('click',async e=>{if(e.target.closest('[data-cancel]'))closeSheet();
+    if(e.target.closest('[data-cdel]')){if(!await confirmDlg(`¿Borrar "${c.name}" con todas sus secciones y puntos?`,'Borrar',true))return;
+      c.sections.forEach(s=>s.items.forEach(i=>delete S.checks[i.id])); await DB.put('meta',{key:'checks',v:S.checks});
+      S.guide=S.guide.filter(x=>x!==c); S.gcity=null; await saveGuide(); closeSheet(); render(); toast('Ciudad borrada')}});
+  f.addEventListener('submit',async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f).entries());
+    if(d.from&&d.to&&d.to<d.from){toast('"Hasta" es anterior a "Desde"');return}
+    if(c){ if((d.from||'')!==(c.from||'')||(d.to||'')!==(c.to||'')) delete c.dates; Object.assign(c,{name:d.name.trim(),from:d.from,to:d.to||d.from,intro:d.intro.trim()}); }
+    else { const nc={key:'c'+uid(),name:d.name.trim(),from:d.from,to:d.to||d.from,intro:d.intro.trim(),sections:[]}; S.guide.push(nc); S.gcity=nc.key; }
+    await saveGuide(); closeSheet(); render(); toast('Guardado')});
+}
+const KINDS={plan:'Plan por horario (con hora)',food:'Lista con dónde y precio',free:'Lista simple'};
+function editSection(si){
+  const c=S.guide.find(x=>x.key===S.gcity); const s=si==='new'?null:c.sections[+si]; const v=s||{title:'',kind:'food',intro:''};
+  openSheet(`<div class="eyebrow">${esc(c.name)}</div><h3 style="margin-bottom:10px">${s?'Editar sección':'Nueva sección'}</h3>
+  <form id="sf" autocomplete="off"><div class="f"><label>Título</label><input name="title" required value="${esc(v.title)}" placeholder="Ej: Qué comer"></div>
+  <div class="f"><label>Tipo</label><select name="kind">${Object.entries(KINDS).map(([k,l])=>`<option value="${k}" ${v.kind===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="f"><label>Texto introductorio (opcional)</label><textarea name="intro" style="min-height:60px">${esc(v.intro||'')}</textarea></div>
+  ${s?`<div class="btnrow"><button type="button" class="btn sm" data-smove="-1" ${+si===0?'disabled':''}>↑ Subir</button><button type="button" class="btn sm" data-smove="1" ${+si===c.sections.length-1?'disabled':''}>↓ Bajar</button></div>`:''}
+  <div class="btnrow">${s?'<button type="button" class="btn danger" data-sdel>Borrar sección</button>':'<button type="button" class="btn" data-cancel>Cancelar</button>'}<button class="btn pri">Guardar</button></div></form>`);
+  const f=$('#sf');
+  f.addEventListener('click',async e=>{if(e.target.closest('[data-cancel]'))closeSheet();
+    const mv=e.target.closest('[data-smove]'); if(mv){const i=+si,j=i+(+mv.dataset.smove); [c.sections[i],c.sections[j]]=[c.sections[j],c.sections[i]]; await saveGuide(); closeSheet(); render(); return}
+    if(e.target.closest('[data-sdel]')){if(!await confirmDlg(`¿Borrar la sección "${s.title}" y sus puntos?`,'Borrar',true))return;
+      s.items.forEach(i=>delete S.checks[i.id]); await DB.put('meta',{key:'checks',v:S.checks}); c.sections.splice(+si,1); await saveGuide(); closeSheet(); render(); toast('Sección borrada')}});
+  f.addEventListener('submit',async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f).entries());
+    if(s) Object.assign(s,{title:d.title.trim(),kind:d.kind,intro:d.intro.trim()}); else c.sections.push({title:d.title.trim(),kind:d.kind,intro:d.intro.trim(),items:[]});
+    await saveGuide(); closeSheet(); const y=scrollY; render(); scrollTo(0,y); toast('Guardado')});
+}
+
+/* ---------- Preguntar a Claude ---------- */
+const fmtDMY=s=>{const [y,m,d]=s.split('-');return `${+d}/${+m}`};
+function currentCityName(){const k=defaultCity();const c=S.guide.find(x=>x.key===k);return c&&c.from?c.name:''}
+function hotelToday(){const t=todayStr();return S.items.find(i=>i.type==='hospedaje'&&i.status!=='cancelado'&&i.startDate&&i.startDate<=t&&t<(i.endDate||i.startDate))}
+function buildContext(opt){
+  const L=[], t=todayStr(), d=new Date();
+  L.push('Contexto de mi viaje (desde mi app de viaje):');
+  L.push(`Viaje: ${S.trip.name}${S.trip.start?` (${fmtDMY(S.trip.start)} al ${fmtDMY(S.trip.end||S.trip.start)})`:''}.`);
+  L.push(`Hoy en mi teléfono: ${fmtShort(t)}, ${pad(d.getHours())}:${pad(d.getMinutes())}.`);
+  const city=currentCityName(), ht=hotelToday();
+  if(city) L.push(`Según mi plan hoy estoy en: ${city}.`);
+  if(ht) L.push(`Me alojo en: ${ht.title}${ht.place?' — '+ht.place:''}.`);
+  if(opt.res && S.items.length){
+    L.push('','Mis reservas y traslados:');
+    sortItems(S.items.filter(i=>i.status!=='cancelado')).forEach(i=>{const T=TYPES[i.type]||TYPES.nota;
+      let s=`- ${i.startDate?fmtDMY(i.startDate)+(i.startTime?' '+i.startTime:''):'sin fecha'}${i.endDate&&i.endDate!==i.startDate?' a '+fmtDMY(i.endDate):''}: ${T.label} · ${i.title}`;
+      if(T.transport&&(i.from||i.to)) s+=` (${i.from||'?'} → ${i.to||'?'})`; else if(i.place) s+=` (${i.place})`;
+      s+=` · ${STATUS[i.status]||''}`; if(i.notes) s+=` · Nota: ${i.notes.replace(/\s+/g,' ').slice(0,140)}`;
+      L.push(s)});
+  }
+  if(opt.guide){const c=S.guide.find(x=>x.key===opt.guide);
+    if(c){L.push('',`Mi guía de ${c.name} ([x] = ya hecho):`);
+      c.sections.forEach(s=>{if(!s.items.length)return;L.push(`${s.title}:`);
+        s.items.forEach(i=>L.push(`- [${S.checks[i.id]?'x':' '}] ${i.time?i.time+' ':''}${i.t}${i.where?' — '+i.where:''}${i.price?' ('+i.price+')':''}${i.imp?' ★':''}`))})}}
+  return L.join('\n');
+}
+function openAsk(preset){
+  const city=defaultCity(), cobj=S.guide.find(x=>x.key===city);
+  const sugg=['¿Qué hago ahora con el tiempo que tengo?','¿Dónde como algo rico y barato cerca?','Plan B si llueve hoy','Ayudame a pedir en el restaurante (frases útiles)','¿Cómo llego al próximo lugar de mi plan?','Revisá mi plan de hoy: ¿llego a todo?'];
+  openSheet(`<div class="eyebrow">✨ Asistente</div><h3 style="margin-bottom:6px">Preguntar a Claude</h3>
+  <p class="muted" style="margin:0 0 10px">Se abre Claude con tu pregunta y el contexto del viaje ya escritos. Necesita conexión.</p>
+  <form id="af"><div class="f" style="margin-top:0"><textarea name="q" id="aq" required placeholder="Ej: Estoy cerca del Duomo, tengo 2 horas, ¿qué hago?" style="min-height:96px">${esc(preset||'')}</textarea></div>
+  <div class="chips" style="flex-wrap:wrap">${sugg.map(s=>`<button type="button" class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+  <label class="impck" style="margin:6px 2px"><input type="checkbox" name="res" checked> Incluir mis reservas</label>
+  ${S.guide.length?`<div class="f"><label>Incluir la guía de</label><select name="guide"><option value="">Ninguna</option>${S.guide.map(c=>`<option value="${c.key}" ${c.key===city?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>`:''}
+  <div class="btnrow"><button type="button" class="btn" data-acopy>Solo copiar</button><button class="btn pri">Abrir en Claude</button></div>
+  <p class="muted" style="margin-top:10px">El texto también queda copiado: si en Claude no aparece escrito, mantené apretado el campo y tocá <b>Pegar</b>. No se envían tus códigos de reserva.</p></form>`);
+  const f=$('#af');
+  const prompt=()=>{const d=Object.fromEntries(new FormData(f).entries());
+    return buildContext({res:!!d.res,guide:d.guide||''})+`\n\nMi pregunta: ${d.q.trim()}\n\nRespondé en español, breve y práctico (estoy en el celular, de viaje). Priorizá opciones baratas y rápidas, y tené en cuenta horarios y distancias.`};
+  f.addEventListener('click',async e=>{const s=e.target.closest('[data-sugg]');if(s){$('#aq').value=s.dataset.sugg;$('#aq').focus();return}
+    if(e.target.closest('[data-acopy]')){if(!$('#aq').value.trim()){toast('Escribí tu pregunta');return} copyText(prompt(),'Copiado: pegalo en Claude')}});
+  f.addEventListener('submit',async e=>{e.preventDefault();const p=prompt();
+    try{await navigator.clipboard.writeText(p)}catch(err){}
+    const url=p.length<=12000?`https://claude.ai/new?q=${encodeURIComponent(p)}`:'https://claude.ai/new';
+    if(p.length>12000) toast('Texto largo: en Claude, pegalo (ya está copiado)');
+    const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();});
+}
+
+/* ---------- Detail ---------- */
+function openSheet(html){closeSheet();const bg=document.createElement('div');bg.className='sheet-bg';bg.id='sheet';
+  bg.innerHTML=`<div class="sheet"><div class="grab"></div>${html}</div>`;bg.addEventListener('click',e=>{if(e.target===bg)closeSheet()});document.body.appendChild(bg);document.body.style.overflow='hidden';return bg}
+function closeSheet(){const s=$('#sheet');if(s)s.remove();document.body.style.overflow=''}
+
+function showItem(id){
+  const it=S.items.find(i=>i.id===id); if(!it)return; const T=TYPES[it.type]||TYPES.nota; const fs=filesOf(id);
+  const when=(d,t)=>d?`${fmtShort(d)}${t?' · '+t:''}`:'';
+  const rows=[];
+  const isH=it.type==='hospedaje';
+  if(it.startDate) rows.push([isH?'Check-in':(it.endDate?'Desde':'Fecha'), when(it.startDate,it.startTime)]);
+  if(it.endDate||it.endTime) rows.push([isH?'Check-out':'Hasta', when(it.endDate||it.startDate,it.endTime)]);
+  if(T.transport&&(it.from||it.to)) rows.push(['Ruta',`${it.from||'?'} → ${it.to||'?'}`]);
+  if(it.place) rows.push(['Lugar',it.place]);
+  if(it.provider) rows.push(['Empresa',it.provider]);
+  if(it.price) rows.push(['Precio',money(it)]);
+  rows.push(['Estado',STATUS[it.status]||'—']);
+  if(it.notes) rows.push(['Notas',it.notes]);
+  const s=openSheet(`<div class="eyebrow">${T.icon} ${T.label}</div><h3>${esc(it.title)}</h3>
+    ${it.code?`<div class="bigcode"><div><small>Código de reserva</small><div class="c">${esc(it.code)}</div></div><button class="btn sm" data-copy="${esc(it.code)}">Copiar</button></div>`:''}
+    ${navPanel(it)}
+    <div class="kv">${rows.map(([k,v])=>`<div class="r"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}
+      ${it.link?`<div class="r"><div class="k">Enlace</div><div class="v"><a class="lnk" href="${esc(it.link)}" target="_blank" rel="noopener">Abrir</a> <span class="muted">(requiere conexión)</span></div></div>`:''}
+    </div>
+    ${fs.length?`<div class="muted" style="margin-left:2px">Archivos</div><div class="atts">${fs.map(f=>`<button class="att" data-view="${f.id}">${isImg(f)?`<img src="${urlOf(f)}" alt="">`:`<div class="pdf"><b>📄</b>${esc(f.name)}</div>`}</button>`).join('')}</div>`:''}
+    <button class="askbtn" data-ask="Sobre «${esc(it.title)}»: ">✨ Preguntar a Claude sobre esto</button>
+    <div class="btnrow"><button class="btn dark" data-edit="${id}">Editar</button><button class="btn" data-dup="${id}">Duplicar</button><button class="btn danger" data-del="${id}">Borrar</button></div>`);
+}
+
+let wakeLock=null;
+async function keepAwake(on){try{
+  if(on&&navigator.wakeLock&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null});}
+  if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}}
+function viewFile(fid, scan){
+  const f=S.files.find(x=>x.id===fid); if(!f)return; const u=urlOf(f);
+  const it=S.items.find(i=>i.id===f.itemId); const sib=it?filesOf(it.id):[f]; const k=sib.findIndex(x=>x.id===f.id);
+  if(scan===undefined) scan = isImg(f) && it && (TYPES[it.type]?.transport || it.type==='entrada');
+  document.querySelectorAll('.viewer').forEach(x=>x.remove());
+  const v=document.createElement('div');v.className='viewer'+(scan?' scan':'');
+  v.innerHTML=`<div class="vt"><span>${esc(it?it.title:f.name)}${sib.length>1?` · ${k+1}/${sib.length}`:''}</span>
+      ${isImg(f)?`<button class="btn sm" data-scanmode>${scan?'Fondo oscuro':'Modo escaneo'}</button>`:''}<button class="btn sm" data-close>Cerrar</button></div>
+    <div class="vb">${isImg(f)?`<img src="${u}" alt="">`:`<div class="pdfbox"><div style="font-size:60px">📄</div><p>${esc(f.name)}</p><a class="btn pri" href="${u}" target="_blank" rel="noopener" download="${esc(f.name)}">Abrir PDF</a><p class="muted" style="color:#9aa">Se abre en el visor del teléfono.</p></div>`}</div>
+    ${scan?`<div class="vtip">☀️ Subí el brillo al máximo para que lo lean mejor</div>`:''}
+    ${sib.length>1?`<div class="vnav"><button class="btn sm" data-vgo="${sib[(k-1+sib.length)%sib.length].id}">‹ Anterior</button><button class="btn sm" data-vgo="${sib[(k+1)%sib.length].id}">Siguiente ›</button></div>`:''}`;
+  v.addEventListener('click',e=>{
+    if(e.target.closest('[data-close]')){v.remove();keepAwake(false);return}
+    if(e.target.closest('[data-scanmode]')){viewFile(fid,!v.classList.contains('scan'));return}
+    const g=e.target.closest('[data-vgo]'); if(g){viewFile(g.dataset.vgo,v.classList.contains('scan'))}});
+  document.body.appendChild(v); keepAwake(true);
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.querySelector('.viewer'))keepAwake(true)});
+
+/* ---------- Editor ---------- */
+let draftFiles=[], removedFiles=[];
+function editItem(id, preset){
+  const base=id?S.items.find(i=>i.id===id):null;
+  const it=Object.assign({type:'actividad',title:'',startDate:'',startTime:'',endDate:'',endTime:'',from:'',to:'',place:'',code:'',provider:'',price:'',currency:'EUR',status:'reservado',link:'',notes:'',addr:'',addr2:''}, base||{}, preset||{});
+  draftFiles = id? filesOf(id).map(f=>({...f,existing:true})) : [];
+  removedFiles=[];
+  openSheet(`<div class="eyebrow">${id?'Editar':'Nuevo'}</div><h3 style="margin-bottom:10px">${id?esc(it.title):'Agregar al viaje'}</h3>
+  <form id="itf" autocomplete="off">
+    <div class="typesel">${Object.entries(TYPES).map(([k,t])=>`<button type="button" data-type="${k}" class="${it.type===k?'on':''}"><span>${t.icon}</span>${t.label}</button>`).join('')}</div>
+    <input type="hidden" name="type" value="${it.type}">
+    <div class="f"><label>Título</label><input name="title" required value="${esc(it.title)}" placeholder="Ej: Hotel en Roma, Museos Vaticanos…"></div>
+    <div class="two"><div class="f"><label id="lsd">Fecha</label><input type="date" name="startDate" value="${esc(it.startDate)}"></div><div class="f"><label>Hora</label><input type="time" name="startTime" value="${esc(it.startTime)}"></div></div>
+    <div class="two" style="margin-top:12px"><div class="f"><label id="led">Hasta (opcional)</label><input type="date" name="endDate" value="${esc(it.endDate)}"></div><div class="f"><label>Hora</label><input type="time" name="endTime" value="${esc(it.endTime)}"></div></div>
+    <div class="two tr" style="margin-top:12px"><div class="f"><label>Desde</label><input name="from" value="${esc(it.from)}" placeholder="EZE, Roma Termini…"></div><div class="f"><label>Hasta</label><input name="to" value="${esc(it.to)}"></div></div>
+    <div class="f"><label>Lugar / dirección</label><input name="place" value="${esc(it.place)}"></div>
+    <div class="f"><label id="la1">Dirección para el mapa</label><input name="addr" value="${esc(it.addr)}" placeholder="Dirección o coordenadas (ej: 43.7751, 11.2408)">
+      <div class="hint">Para el botón "Cómo llegar". Si lo dejás vacío se usa "Lugar".</div></div>
+    <div class="f tr2"><label>Dirección de llegada (mapa)</label><input name="addr2" value="${esc(it.addr2)}" placeholder="Dirección o coordenadas"></div>
+    <div class="two"><div class="f"><label>Código de reserva</label><input name="code" value="${esc(it.code)}" autocapitalize="characters"></div><div class="f"><label>Empresa / sitio</label><input name="provider" value="${esc(it.provider)}" placeholder="Airbnb, Trenitalia…"></div></div>
+    <div class="two" style="margin-top:12px"><div class="f"><label>Precio</label><input name="price" type="number" step="0.01" inputmode="decimal" value="${esc(it.price)}"></div><div class="f"><label>Moneda</label><select name="currency">${CURRENCIES.map(c=>`<option ${it.currency===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+    <div class="f"><label>Estado</label><select name="status">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}" ${it.status===k?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div class="f"><label>Enlace</label><input name="link" type="url" value="${esc(it.link)}" placeholder="https://…"></div>
+    <div class="f"><label>Notas</label><textarea name="notes" placeholder="Horarios, cómo llegar, contacto, qué incluye…">${esc(it.notes)}</textarea></div>
+    <div class="f"><label>Archivos (pasajes, QR, vouchers)</label>
+      <label class="btn" style="display:inline-block">📎 Adjuntar foto o PDF<input type="file" id="fin" accept="image/*,application/pdf" multiple hidden></label>
+      <div class="atts" id="atts"></div></div>
+    <div class="btnrow"><button type="button" class="btn" data-cancel>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
+  </form>`);
+  const f=$('#itf');
+  const sync=()=>{const t=f.type.value, tr=TYPES[t].transport;
+    f.querySelector('.tr').style.display=tr?'grid':'none';
+    f.querySelector('.tr2').style.display=tr?'block':'none';
+    $('#la1').textContent= tr?'Dirección de salida (mapa)':'Dirección para el mapa';
+    $('#lsd').textContent= t==='hospedaje'?'Check-in':(tr?'Salida':'Fecha');
+    $('#led').textContent= t==='hospedaje'?'Check-out':(tr?'Llegada (opcional)':'Hasta (opcional)');};
+  sync(); renderAtts();
+  f.addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b){f.type.value=b.dataset.type;f.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('on',x===b));sync();}
+    if(e.target.closest('[data-cancel]'))closeSheet();
+    const rm=e.target.closest('[data-rm]'); if(rm){e.preventDefault();e.stopPropagation();const fid=rm.dataset.rm;const df=draftFiles.find(x=>x.id===fid);if(df&&df.existing)removedFiles.push(fid);draftFiles=draftFiles.filter(x=>x.id!==fid);renderAtts();}});
+  $('#fin').addEventListener('change',async e=>{for(const file of e.target.files){const blob=await maybeShrink(file);draftFiles.push({id:uid(),name:file.name,type:blob.type||file.type,blob,size:blob.size});}e.target.value='';renderAtts();});
+  f.addEventListener('submit',async e=>{e.preventDefault();
+    const data=Object.fromEntries(new FormData(f).entries());
+    if(data.endDate&&data.startDate&&data.endDate<data.startDate){toast('La fecha "hasta" es anterior a la de inicio');return}
+    if(!TYPES[data.type].transport){data.from='';data.to='';data.addr2='';}
+    const rec=Object.assign({}, base||{}, data, {id:id||uid(), code:(data.code||'').trim()});
+    try{
+      await DB.put('items',rec);
+      for(const fid of removedFiles){await DB.del('files',fid); if(urls.has(fid)){URL.revokeObjectURL(urls.get(fid));urls.delete(fid)}}
+      for(const df of draftFiles.filter(x=>!x.existing)){const r={id:df.id,itemId:rec.id,name:df.name,type:df.type,blob:df.blob,size:df.size};await DB.put('files',r);}
+    }catch(err){toast('Error al guardar: '+(err&&err.name||err));return}
+    S.items=await DB.all('items'); S.files=await DB.all('files');
+    closeSheet(); render(); toast('Guardado'); });
+}
+function renderAtts(){const el=$('#atts');if(!el)return;
+  el.innerHTML=draftFiles.map(f=>`<div class="att">${isImg(f)?`<img src="${f.existing?urlOf(f):URL.createObjectURL(f.blob)}" alt="">`:`<div class="pdf"><b>📄</b>${esc(f.name)}</div>`}<button class="x" type="button" data-rm="${f.id}">✕</button></div>`).join('');}
+
+// Achica fotos muy grandes (manteniendo legibles los QR)
+function maybeShrink(file){return new Promise(res=>{
+  if(!/^image\/(jpeg|png|webp|heic|heif)/.test(file.type)||file.size<1.2e6) return res(file);
+  const img=new Image(), u=URL.createObjectURL(file);
+  img.onload=()=>{const M=2200;let {width:w,height:h}=img;const k=Math.min(1,M/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);
+    c.toBlob(b=>{URL.revokeObjectURL(u);res(b&&b.size<file.size?b:file)},'image/jpeg',.88);};
+  img.onerror=()=>{URL.revokeObjectURL(u);res(file)}; img.src=u;});}
+
+/* ---------- Backup ---------- */
+const blobToDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)});
+function dataURLToBlob(d){const [h,b64]=d.split(',');const mime=(h.match(/data:([^;]+)/)||[])[1]||'application/octet-stream';const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:mime})}
+async function buildBackup(){const files=[];for(const f of S.files){files.push({id:f.id,itemId:f.itemId,name:f.name,type:f.type,data:await blobToDataURL(f.blob)})}
+  return JSON.stringify({app:'mi-viaje',version:1,exported:new Date().toISOString(),trip:S.trip,items:S.items,checks:S.checks,guide:S.guide,files});}
+async function restore(text){
+  let d; try{d=JSON.parse(text)}catch(e){toast('El archivo no es una copia válida');return}
+  if(d.app!=='mi-viaje'||!Array.isArray(d.items)){toast('El archivo no es una copia de Mi Viaje');return}
+  if(!await confirmDlg(`Restaurar reemplaza todo lo actual por la copia (${d.items.length} ítems, ${(d.files||[]).length} archivos). ¿Seguir?`,'Restaurar',true))return;
+  await DB.clear('items');await DB.clear('files');
+  await DB.put('meta',Object.assign({key:'trip'},d.trip||{}));
+  for(const i of d.items) await DB.put('items',i);
+  await DB.del('meta','mig-maps');
+  S.checks=d.checks||{}; await DB.put('meta',{key:'checks',v:S.checks});
+  S.guide=d.guide||(d.items.some(i=>/^seed/.test(i.id))?cloneGuide():[]); S.gcity=null; await saveGuide();
+  for(const f of d.files||[]) await DB.put('files',{id:f.id,itemId:f.itemId,name:f.name,type:f.type,blob:dataURLToBlob(f.data),size:0});
+  urls.forEach(u=>URL.revokeObjectURL(u));urls.clear();
+  S.trip=await DB.get('meta','trip');S.items=await DB.all('items');S.files=await DB.all('files');await migrate();render();toast('Copia restaurada');
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-ask],[data-check],[data-gadd],[data-gedit],[data-gcityedit],[data-gsec],[data-gcity],[data-hide],[data-tab],[data-open],[data-view],[data-edit],[data-del],[data-dup],[data-copy],[data-filter],#exp,#expc,#impt,#wipe');
+  if(!t)return;
+  if(t.dataset.check!==undefined){const id=t.dataset.check;if(S.checks[id])delete S.checks[id];else S.checks[id]=true;
+    try{await DB.put('meta',{key:'checks',v:S.checks})}catch(e){} const y=scrollY;render();scrollTo(0,y);return}
+  if(t.dataset.gadd!==undefined){editGuideItem(+t.dataset.gadd,null);return}
+  if(t.dataset.gedit){const [si,id]=t.dataset.gedit.split('|');editGuideItem(+si,id);return}
+  if(t.dataset.ask!==undefined){openAsk(t.dataset.ask);return}
+  if(t.dataset.gcityedit!==undefined){editCity(t.dataset.gcityedit||null);return}
+  if(t.dataset.gsec!==undefined){editSection(t.dataset.gsec);return}
+  if(t.dataset.gcity){S.gcity=t.dataset.gcity;render();scrollTo(0,0);return}
+  if(t.dataset.hide!==undefined){S.hideDone=!S.hideDone;const y=scrollY;render();scrollTo(0,y);return}
+  if(t.dataset.tab){e.preventDefault();S.view=t.dataset.tab;closeSheet();render();scrollTo(0,0);return}
+  if(t.dataset.filter){S.filter=t.dataset.filter;document.querySelectorAll('[data-filter]').forEach(c=>c.classList.toggle('on',c===t));renderList();return}
+  if(t.dataset.open){showItem(t.dataset.open);return}
+  if(t.dataset.view){viewFile(t.dataset.view, t.dataset.scan?true:undefined);return}
+  if(t.dataset.edit){editItem(t.dataset.edit);return}
+  if(t.dataset.copy){copyText(t.dataset.copy,'Código copiado');return}
+  if(t.dataset.dup){const o=S.items.find(i=>i.id===t.dataset.dup);const c={...o};delete c.id;c.title=o.title+' (copia)';editItem(null,c);return}
+  if(t.dataset.del){const id=t.dataset.del;const it=S.items.find(i=>i.id===id);
+    if(!await confirmDlg(`¿Borrar "${it.title}" y sus archivos?`,'Borrar',true))return;
+    await DB.del('items',id);for(const f of filesOf(id))await DB.del('files',f.id);
+    S.items=await DB.all('items');S.files=await DB.all('files');closeSheet();render();toast('Borrado');return}
+  if(t.id==='exp'){const txt=await buildBackup();const blob=new Blob([txt],{type:'application/json'});const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=`mi-viaje-${todayStr()}.json`;document.body.appendChild(a);
+    try{a.click();toast('Copia descargada')}catch(err){toast('No se pudo descargar: usá "Copiar como texto"')}a.remove();return}
+  if(t.id==='expc'){copyText(await buildBackup(),'Copia copiada al portapapeles');return}
+  if(t.id==='impt'){openSheet(`<h3>Pegar copia</h3><p class="muted">Pegá el texto de una copia de Mi Viaje.</p><form id="pf"><textarea id="pt" style="width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:10px"></textarea><div class="btnrow"><button class="btn" type="button" onclick="closeSheet()">Cancelar</button><button class="btn pri">Restaurar</button></div></form>`);
+    $('#pf').onsubmit=async ev=>{ev.preventDefault();const v=$('#pt').value;closeSheet();await restore(v)};return}
+  if(t.id==='wipe'){if(!await confirmDlg(`Se borra "${S.trip.name}" de este teléfono: reservas, archivos, guía y tildados. ¿Ya descargaste la copia?`,'Sí, empezar de cero',true))return;
+    await DB.clear('items');await DB.clear('files');urls.forEach(u=>URL.revokeObjectURL(u));urls.clear();
+    S.items=[];S.files=[];S.checks={};S.guide=[];S.gcity=null;S.trip={key:'trip',name:'Mi viaje',start:'',end:''};
+    await DB.put('meta',{key:'checks',v:{}});await saveGuide();await DB.put('meta',S.trip);
+    S.view='cfg';render();scrollTo(0,0);toast('Listo: cargá el nombre y las fechas del nuevo viaje');return}
+});
+document.addEventListener('change',async e=>{if(e.target.id==='impf'&&e.target.files[0]){const txt=await e.target.files[0].text();e.target.value='';await restore(txt)}});
+document.addEventListener('submit',async e=>{if(e.target.id!=='tripf')return;e.preventDefault();const d=Object.fromEntries(new FormData(e.target).entries());
+  if(d.start&&d.end&&d.end<d.start){toast('La fecha final es anterior a la inicial');return}
+  S.trip=Object.assign({key:'trip'},S.trip,d);await DB.put('meta',S.trip);toast('Guardado')});
+$('#fab').addEventListener('click',()=>editItem(null, S.view==='res'&&TYPES[S.filter]?{type:S.filter}:null));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const v=document.querySelector('.viewer');if(v){v.remove();keepAwake(false)}else closeSheet()}});
+
+async function storageInfo(){try{const el=$('#stinfo');if(!el||!navigator.storage||!navigator.storage.estimate)return;const est=await navigator.storage.estimate();
+  const p=navigator.storage.persisted?await navigator.storage.persisted():false;el.textContent=`Usando ${(est.usage/1048576).toFixed(1)} MB en el teléfono${p?' · almacenamiento protegido':''}.`}catch(e){}}
+const _render=render; render=function(){_render(); if(S.view==='cfg')storageInfo();};
+
+/* ---------- Start ---------- */
+(async()=>{
+  await load(); render();
+  if(SW_OK){try{await navigator.serviceWorker.register('sw.js')}catch(e){}}
+})();
+</script>
+</body>
+</html>
