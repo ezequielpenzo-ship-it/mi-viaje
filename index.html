@@ -497,7 +497,7 @@ function viewCfg(){
   <div class="panel"><p>Para usar la app en otro viaje: primero tocá <b>Descargar copia</b> (arriba) y guardá el archivo. Así este viaje queda guardado y lo podés volver a abrir cuando quieras con <b>Restaurar desde archivo</b>.</p>
     <p>Después, <b>Empezar un viaje nuevo</b> borra reservas, archivos, guía y tildados, y deja la app vacía.</p>
     <div class="btnrow"><button class="btn danger" id="wipe">Empezar un viaje nuevo</button></div></div>
-  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v10</p>`;
+  <p class="muted" style="text-align:center;margin-top:20px">Mi Viaje · v11</p>`;
 }
 
 /* ---------- Editor de la guía ---------- */
@@ -821,7 +821,16 @@ const _render=render; render=function(){_render(); if(S.view==='cfg')storageInfo
 /* ---------- Start ---------- */
 (async()=>{
   await load(); render();
-  if(SW_OK){try{await navigator.serviceWorker.register('sw.js')}catch(e){}}
+  if(SW_OK){try{
+    const hadCtrl=!!navigator.serviceWorker.controller;
+    const reg=await navigator.serviceWorker.register('sw.js',{updateViaCache:'none'});
+    reg.update().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{})});
+    let reloaded=false, pending=false;
+    const doReload=()=>{if(reloaded)return; if($('#sheet')||document.querySelector('.viewer')){pending=true;return} reloaded=true; location.reload()};
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadCtrl)doReload()});
+    document.addEventListener('click',()=>{if(pending&&!$('#sheet')&&!document.querySelector('.viewer'))setTimeout(doReload,300)});
+  }catch(e){}}
 })();
 </script>
 </body>
